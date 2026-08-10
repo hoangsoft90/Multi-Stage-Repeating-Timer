@@ -166,8 +166,7 @@
       "expo-asset"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "newArchEnabled": true
+      "typedRoutes": true
     },
     "extra": {
       "router": {},
