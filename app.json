@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.looptimer.app",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
           "fetch"
@@ -34,7 +35,8 @@
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
         "com.google.android.gms.permission.AD_ID"
       ],
-      "package": "com.looptimer.app"
+      "package": "com.looptimer.app",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
