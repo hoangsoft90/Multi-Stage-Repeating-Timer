@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "looptimer",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.looptimer.app",
@@ -163,10 +162,12 @@
             "useFrameworks": "dynamic"
           }
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "newArchEnabled": true
     },
     "extra": {
       "router": {},
