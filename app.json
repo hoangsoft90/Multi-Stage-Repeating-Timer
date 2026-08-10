@@ -1,0 +1,189 @@
+{
+  "expo": {
+    "name": "LoopTimer",
+    "slug": "looptimer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "looptimer",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.looptimer.app",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "fetch"
+        ],
+        "NSUserTrackingUsageDescription": "Dữ liệu này được dùng để hiển thị quảng cáo phù hợp hơn."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F14",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "com.google.android.gms.permission.AD_ID"
+      ],
+      "package": "com.looptimer.app"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-audio",
+      "expo-tracking-transparency",
+      "expo-notifications",
+      [
+        "@react-native-firebase/app",
+        {
+          "androidGoogleServicesFile": "./google-services.json",
+          "iosGoogleServicesFile": "./GoogleService-Info.plist"
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "skAdNetworkItems": [
+            "cstr6suwn9.skadnetwork",
+            "4fzdc2evr5.skadnetwork",
+            "4pfyvq9l8r.skadnetwork",
+            "2fnua5tdw4.skadnetwork",
+            "ydx93a7ass.skadnetwork",
+            "5a6flpkh64.skadnetwork",
+            "p78axxw29g.skadnetwork",
+            "v72qych5uu.skadnetwork",
+            "ludvb6z3bs.skadnetwork",
+            "cp8zw746q7.skadnetwork",
+            "3sh42y64q3.skadnetwork",
+            "c6k4g5qg8m.skadnetwork",
+            "s39g8k73mm.skadnetwork",
+            "3qy4746246.skadnetwork",
+            "3lzbd5x2q7.skadnetwork",
+            "f38h382jlk.skadnetwork",
+            "hs6bdukanm.skadnetwork",
+            "prcb7njmu6.skadnetwork",
+            "v4nxqhlyqp.skadnetwork",
+            "wzmmz9fp6w.skadnetwork",
+            "yclnxrl5pm.skadnetwork",
+            "t38b2kh725.skadnetwork",
+            "7ug5zh24hu.skadnetwork",
+            "gta9lk7p23.skadnetwork",
+            "vutu7akeur.skadnetwork",
+            "y5ghdn5j9k.skadnetwork",
+            "n6fk4nfna4.skadnetwork",
+            "v9wttpbfk9.skadnetwork",
+            "n38lu8286q.skadnetwork",
+            "47vhq6n2f4.skadnetwork",
+            "kbd757ywx3.skadnetwork",
+            "9t245vhmpl.skadnetwork",
+            "a2p9lx4jpn.skadnetwork",
+            "22mmun2rn5.skadnetwork",
+            "4468km3ulz.skadnetwork",
+            "2u9pt9hc89.skadnetwork",
+            "8s468mfl3y.skadnetwork",
+            "av6w8kgt66.skadnetwork",
+            "klf5c3l5u5.skadnetwork",
+            "ppxm28t8ap.skadnetwork",
+            "kbd757ywx3.skadnetwork",
+            "424m5254k4.skadnetwork",
+            "uw77j35x4d.skadnetwork",
+            "578prtvx9j.skadnetwork",
+            "4dzt79r2f4.skadnetwork",
+            "e5fvkxwrpn.skadnetwork",
+            "8c4e2ghe7u.skadnetwork",
+            "zq492l623r.skadnetwork",
+            "3rd42ekr43.skadnetwork",
+            "3qcr597p9d.skadnetwork"
+          ]
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0B0F14",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 110
+        }
+      ],
+      "expo-localization",
+      [
+        "expo-widgets",
+        {
+          "enableAndroid": true,
+          "bundleIdentifier": "com.looptimer.app.ExpoWidgetsTarget",
+          "groupIdentifier": "group.com.looptimer.app",
+          "enablePushNotifications": false,
+          "widgets": [
+            {
+              "name": "TimerWidget",
+              "displayName": "LoopTimer",
+              "description": "Timer đang chạy — LoopTimer",
+              "ios": {
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium"
+                ]
+              },
+              "android": {
+                "minWidth": 180,
+                "minHeight": 110,
+                "targetCellWidth": 4,
+                "targetCellHeight": 2,
+                "resizeMode": "both"
+              }
+            }
+          ]
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "dynamic"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "ExpoWidgetsTarget",
+                  "bundleIdentifier": "com.looptimer.app.ExpoWidgetsTarget",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.looptimer.app"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "162e4148-94df-4aa2-a427-3df1587f5999"
+      }
+    },
+    "owner": "hoangsoft90"
+  }
+}

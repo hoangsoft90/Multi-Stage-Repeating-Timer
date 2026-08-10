@@ -1,0 +1,2 @@
+name: add-notification-cold-start
+description: Xử lý notification actions (Pause/Skip/Stop) khi app bị kill + FGS "Keep timer alive" dialog

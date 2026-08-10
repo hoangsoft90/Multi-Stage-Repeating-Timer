@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "293972213598",
+    "project_id": "multi-stage-repeating-timer",
+    "storage_bucket": "multi-stage-repeating-timer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293972213598:android:0ceaa0ced29f9031f599cf",
+        "android_client_info": {
+          "package_name": "com.looptimer.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWqcXlnYkQAaYClVuLTe8BQSt34xf7qJE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

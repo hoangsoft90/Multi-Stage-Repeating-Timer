@@ -1,0 +1,41 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+context: |
+  Tech stack: Expo (React Native) + TypeScript + expo-router + Zustand + AsyncStorage
+  Domain: Multi-Stage Repeating Timer app (LoopTimer) — local-first, no backend
+  Timer engine: pure TypeScript, absolute timestamps + reconcile(now), event-sourcing, Clock injectable (FakeClock), tested with Jest
+  Native: expo-notifications (scheduling + auto-restore after reboot), expo-intent-launcher (SCHEDULE_EXACT_ALARM), expo-audio (playsInSilentModeIOS), expo-haptics, expo-keep-awake, expo-tracking-transparency (ATT)
+  Ads/Firebase: react-native-google-mobile-ads + @react-native-firebase/* — REQUIRE dev build (expo-dev-client), no-op on web
+  Web: npx expo export --platform web for testing; expo-notifications/ads/firebase are no-op on web (Platform.OS === 'web' guards)
+  Conventions: artifacts written in Vietnamese; MVP scope per plan v1.2 (5 changes by phase)
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

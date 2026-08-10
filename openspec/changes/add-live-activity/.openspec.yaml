@@ -1,0 +1,2 @@
+name: add-live-activity
+description: iOS Live Activity (ActivityKit) hiển thị timer trên Lock Screen / Dynamic Island qua expo-widgets — giải quyết giới hạn 50-notification
