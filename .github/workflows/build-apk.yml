@@ -18,17 +18,20 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Setup Java 17
+      - name: Setup Java (JDK 17 — required for Expo SDK 52+ / RN 0.7x+)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
+      - name: Setup Android SDK (accepts licenses + build-tools)
+        uses: android-actions/setup-android@v3
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Prebuild Android project
-        run: npx expo prebuild --platform android --no-install
+      - name: Generate native project (expo prebuild --clean)
+        run: npx expo prebuild --platform android --clean --no-install
         env:
           CI: '1'
           EXPO_NO_TELEMETRY: '1'
@@ -51,4 +54,5 @@ jobs:
           path: |
             android/app/build/outputs/apk/debug/*.apk
             android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
           retention-days: 14

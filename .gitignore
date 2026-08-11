@@ -9,6 +9,9 @@ dist/
 web-build/
 expo-env.d.ts
 
+# downloaded APK builds (GH Actions artifacts)
+apk/
+
 # Native
 .kotlin/
 *.orig.*
