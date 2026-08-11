@@ -7,9 +7,9 @@ App đã hoàn chỉnh về chức năng (engine → UI → background → feedb
 - **Ad placement (đóng băng)**: App Open (cold/warm start && !hasActiveSession && cooldown), Interstitial sau Stop thủ công hoặc session tự kết thúc (cooldown 240s, max 1/phiên), Native/Banner Home, Rewarded (user chủ động unlock **tạm thời 24h** custom sound). **Timer Running: KHÔNG có ad.** Notification action / stage change: không show ad.
 - **Ad library**: **`react-native-google-mobile-ads`** (config plugin trong app.json, App ID Android/iOS; **yêu cầu dev build** — không chạy trong Expo Go; web: no-op vì SDK ads không hỗ trợ web).
 - **Ad eligibility (AdManager)**: `canShowAppOpen()`, `canShowInterstitial()`, `canShowRewarded()` theo cooldown + frequency cap + trạng thái session; mọi magic number từ Remote Config.
-- **Remote Config default values**: bảng 8 key (interstitial_cooldown_seconds=240, interstitial_max_per_session=1, app_open_cooldown_seconds=60, max_scheduled_transitions_ios=50, missed_transition_rate_threshold=0.15, timer_screen_native_ad_enabled=false, preset_free_limit=-1, custom_sound_unlock_hours=24) qua **`@react-native-firebase/remote-config`**.
-- **ATT (iOS)**: **`expo-tracking-transparency`** — xin sau khi user có value-moment đầu tiên (tạo/start timer đầu tiên thành công), không xin lúc cold-start; Denied/Restricted → non-personalized ads fallback vẫn serve.
-- **Observability**: **`@react-native-firebase/analytics` + `crashlytics`**; metrics: `missed_transition_rate` (ngưỡng 0.15 → gợi ý FGS), `ad_shown/clicked`, `permission_denied` (tách theo loại), `timer_started`, `att_status`.
+- **Remote Config default values**: bảng 9 key (interstitial_cooldown_seconds=240, interstitial_max_per_session=1, app_open_cooldown_seconds=60, max_scheduled_transitions_ios=50, missed_transition_rate_threshold=0.15, timer_screen_native_ad_enabled=false, preset_free_limit=-1, custom_sound_unlock_hours=24, **reminder_reserved_slots=10**) qua **`@react-native-firebase/remote-config`** (defaults khai trong `impl.native.ts` + `impl.web.ts`).
+- **ATT (iOS)**: **`expo-tracking-transparency`** — xin trong `startPreset` (start timer đầu tiên = value-moment, không xin lúc cold-start); Denied/Restricted → non-personalized ads fallback vẫn serve (⚠️ **chưa implement — defer**, xem tasks 4.2).
+- **Observability**: **`@react-native-firebase/analytics` + `crashlytics`**; metrics đã log: `stage_transition` (missed) → `missed_transition_rate_high` (rate > 0.15 → gợi ý FGS), `ad_shown` (placement + shown:false khi fail), `rewarded_unlock`, `permission_denied` (type: notification) / `permission_requested` (type: exact_alarm), `att_prompt_shown`. (`timer_started`, `ad_clicked`, `att_status` chưa implement — defer).
 - **Policy**: Privacy Policy + Consent Day 1, link trong Settings (đã có Phase 1), mô tả Google Mobile Ads SDK.
 
 **Không đổi behavior hiện có**: không ảnh hưởng engine/UI/scheduling/feedback; ad chỉ xuất hiện ở nơi quy định.
@@ -19,9 +19,9 @@ App đã hoàn chỉnh về chức năng (engine → UI → background → feedb
 ### New Capabilities
 
 - `monetization`: AdMob placement + AdManager eligibility (App Open, Interstitial post-Stop, Native Home, Rewarded 24h; không ad khi timer chạy/stage change).
-- `remote-config`: Remote Config với 8 default values + mechanism fallback khi không có network.
-- `observability`: Analytics + Crashlytics, danh sách metrics chuẩn (missed_transition_rate, ad_shown/clicked, permission_denied, timer_started, att_status).
-- `policy`: Privacy Policy + Consent Day 1 + ATT timing (sau value-moment) + non-personalized fallback.
+- `remote-config`: Remote Config với 9 default values + mechanism fallback khi không có network.
+- `observability`: Analytics + Crashlytics, danh sách metrics chuẩn (missed_transition_rate qua stage_transition/missed_transition_rate_high, ad_shown, rewarded_unlock, permission_denied/permission_requested, att_prompt_shown).
+- `policy`: Privacy Policy + Consent Day 1 + ATT timing (sau value-moment) + non-personalized fallback (⚠️ chưa implement — defer).
 
 ### Modified Capabilities
 

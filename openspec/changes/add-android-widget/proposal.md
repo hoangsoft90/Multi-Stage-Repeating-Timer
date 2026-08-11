@@ -2,12 +2,12 @@
 
 ## Vấn đề
 
-JS foundation widget (v1.2, `add-home-widget`): `WidgetBridge.updateTimerSnapshot` ghi snapshot vào AsyncStorage `looptimer:widget-snapshot`, nhưng chưa có widget THẬT trên Android — user phải mở app để xem timer đang chạy / bắt đầu routine. `expo-widgets` (official, SDK 57) **chỉ hỗ trợ iOS** — Android phải dùng community library.
+JS foundation widget (v1.2, `add-home-widget`): `WidgetBridge.updateTimerSnapshot` ghi snapshot vào AsyncStorage `looptimer:widget-snapshot`, nhưng chưa có widget THẬT trên Android — user phải mở app để xem timer đang chạy / bắt đầu routine.
 
 ## Giải pháp
 
-1. **`@saleksovski/react-native-android-widget`** — thư viện chính thức trong cộng đồng cho Android App Widgets render từ React component (RemoteViews), hoạt động với Expo dev build.
-2. **Re-plumb `WidgetBridge` (Android)**: thay vì chỉ ghi AsyncStorage, native impl còn gọi `updateWidget(snapshotData)` → widget re-render ngay khi có transition (đã có sẵn từ timer-store `syncWidgets`).
+1. **`expo-widgets` (official SDK 57, v57.0.8)** — dùng cho cả Android widget + iOS Live Activity; hỗ trợ Android qua config plugin `enableAndroid: true` (Glance/Compose). Ban đầu dự tính `@saleksovski/react-native-android-widget` nhưng thư viện không tồn tại trên npm (404) — đã loại (xem tasks 1.1).
+2. **Re-plumb `WidgetBridge` (Android)**: thay vì chỉ ghi AsyncStorage, native impl còn gọi `TimerWidget.updateSnapshot(widgetData)` → widget re-render ngay khi có transition (đã có sẵn từ timer-store `syncWidgets`).
 3. **1 widget medium** hiển thị: tên stage + countdown + round; khi idle → trạng thái rỗng ("Mở LoopTimer"). Tap widget → mở app đúng màn (deep-link `looptimer:///?start=<presetId>` khi có preset — Home đã xử lý quick start từ v1.2).
 
 ## Non-goals

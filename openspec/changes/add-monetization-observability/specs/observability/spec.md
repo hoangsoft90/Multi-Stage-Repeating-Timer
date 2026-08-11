@@ -1,6 +1,6 @@
 ## Purpose
 
-Capability `observability` định nghĩa việc thu thập dữ liệu vận hành từ Day 1: Firebase Analytics + Crashlytics, danh sách metrics chuẩn (missed_transition_rate, ad_shown/clicked, permission_denied, timer_started, att_status) và quy tắc không chặn chức năng khi đo lường lỗi. Metrics này quyết định khi nào gợi ý bật FGS (Phase 2) và tối ưu monetization.
+Capability `observability` định nghĩa việc thu thập dữ liệu vận hành từ Day 1: Firebase Analytics + Crashlytics, danh sách metrics đã implement và quy tắc không chặn chức năng khi đo lường lỗi. Metrics này quyết định khi nào gợi ý bật FGS và tối ưu monetization.
 
 ## ADDED Requirements
 
@@ -16,24 +16,27 @@ Hệ thống SHALL khởi tạo Firebase Analytics và Crashlytics ở khởi đ
 - **THEN** app vẫn chạy bình thường, chỉ mất tính năng đo lường
 
 ### Requirement: Metrics chuẩn
-Hệ thống SHALL log các metrics sau:
-- `missed_transition_rate`: tỷ lệ transition bị trễ/bỏ lỡ so với đúng giờ — tính theo lượt reconcile bắt kịp ≥ 1 stage bị missed; ngưỡng 0.15 dùng để gợi ý FGS (Remote Config).
-- `ad_shown` / `ad_clicked`: với tham số placement (app_open/interstitial/native/rewarded) và kết quả.
-- `permission_denied`: tách riêng theo loại permission (notification / exact_alarm / boot).
-- `timer_started`: với preset_id, repeat_mode, số stage, duration tổng.
-- `att_status`: trạng thái ATT (authorized/denied/restricted/notDetermined) sau khi user trả lời.
+Hệ thống SHALL log các metrics sau (trạng thái thực tế trong code):
+- `stage_transition`: event có tham số `missed: boolean` — transition đúng giờ vs bị trễ (reconcile bắt kịp ≥ 1 stage bị missed); từ đó tính `missed_transition_rate` trên thiết bị; khi rate > ngưỡng Remote Config 0.15 → log `missed_transition_rate_high` (rate) và kích hoạt gợi ý FGS dialog (fgs-trigger).
+- `ad_shown`: với tham số placement (banner/interstitial/app_open/rewarded) và `shown: false` khi load fail (kèm reason cho banner).
+- `rewarded_unlock`: với `hours` khi user xem xong Rewarded ad.
+- `permission_denied`: type = notification khi user từ chối POST_NOTIFICATIONS.
+- `permission_requested`: type = exact_alarm khi mở màn cấp quyền SCHEDULE_EXACT_ALARM.
+- `att_prompt_shown`: sau khi user trả lời ATT prompt (chưa kèm trạng thái chi tiết).
 
-#### Scenario: Log timer_started
-- **WHEN** user start một session
-- **THEN** hệ thống log event timer_started với đúng preset_id, repeat_mode, số stage, tổng duration
+> ⚠️ Các metric `timer_started`, `ad_clicked`, `att_status` (trạng thái ATT chi tiết) đã nêu trong thiết kế gốc nhưng **chưa implement** — defer (ghi rõ trong tasks).
 
-#### Scenario: Log missed_transition_rate
+#### Scenario: Log stage_transition missed
 - **WHEN** reconcile bắt kịp 1+ stage bị missed
-- **THEN** hệ thống log missed transition để tính rate trên thiết bị
+- **THEN** hệ thống log `stage_transition` với missed=true; rate cao → `missed_transition_rate_high` + gợi ý FGS
+
+#### Scenario: Log ad_shown khi fail
+- **WHEN** interstitial load fail do không có internet
+- **THEN** hệ thống log `ad_shown` với placement=interstitial, shown=false
 
 #### Scenario: Log permission_denied tách loại
 - **WHEN** user từ chối POST_NOTIFICATIONS
-- **THEN** hệ thống log permission_denied với type = notification (không trộn với exact_alarm)
+- **THEN** hệ thống log permission_denied với type = notification (không trộn với exact_alarm — exact_alarm chỉ log `permission_requested` khi mở màn cấp quyền)
 
 ### Requirement: Đo lường không chặn chức năng
 Mọi service đo lường SHALL chạy không đồng bộ, không blocking UI/timer; lỗi logging SHALL được nuốt (swallow) và không crash.

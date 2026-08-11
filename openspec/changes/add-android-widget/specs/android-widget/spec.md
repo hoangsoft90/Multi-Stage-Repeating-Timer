@@ -5,7 +5,7 @@ Capability `android-widget` định nghĩa home-screen widget Android hiển th�
 ## ADDED Requirements
 
 ### Requirement: Widget hiển thị timer snapshot (Android)
-Trên Android (dev build có cài `@saleksovski/react-native-android-widget`), widget SHALL hiển thị từ snapshot hiện tại: tên stage, countdown (MM:SS tính tại thời điểm update), round (`x/y`, forever → `∞`), preset name, trạng thái (running/paused). Widget SHALL được cập nhật khi timer-store emit transition event (StageStarted / SessionResumed / SessionPaused) qua `WidgetBridge.updateTimerSnapshot` — không sync theo tick 250ms (nhất quán add-home-widget). Do giới hạn nền tảng (`updatePeriodMillis` ≥ 30 phút), widget KHÔNG tự đếm ngược realtime — hiển thị giá trị tại lần update gần nhất.
+Trên Android (dev build có cài **`expo-widgets`** với config plugin `enableAndroid: true` — thư viện `@saleksovski/react-native-android-widget` đã bị loại vì không tồn tại trên npm, xem tasks 1.1), widget SHALL hiển thị từ snapshot hiện tại: tên stage, countdown (MM:SS tính tại thời điểm update), round (`x/y`, forever → `∞`), preset name, trạng thái (running/paused). Widget SHALL được cập nhật khi timer-store emit transition event (StageStarted / SessionResumed / SessionPaused) qua `WidgetBridge.updateTimerSnapshot` — không sync theo tick 250ms (nhất quán add-home-widget). Do giới hạn nền tảng (`updatePeriodMillis` ≥ 30 phút), widget KHÔNG tự đếm ngược realtime — hiển thị giá trị tại lần update gần nhất.
 
 #### Scenario: Stage bắt đầu
 - **WHEN** session start và StageStarted emit (WidgetBridge nhận snapshot mới)

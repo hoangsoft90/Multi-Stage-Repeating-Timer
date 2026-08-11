@@ -1,10 +1,10 @@
 ## Purpose
 
-Capability `remote-config` định nghĩa cấu hình từ xa Firebase Remote Config: 8 key chuẩn với giá trị mặc định cụ thể (áp dụng ngay khi chưa fetch được), cơ chế fallback khi không có network, và quy tắc mọi magic number phải qua Remote Config thay vì hard-code.
+Capability `remote-config` định nghĩa cấu hình từ xa Firebase Remote Config: 9 key chuẩn với giá trị mặc định cụ thể (áp dụng ngay khi chưa fetch được), cơ chế fallback khi không có network, và quy tắc mọi magic number phải qua Remote Config thay vì hard-code.
 
 ## ADDED Requirements
 
-### Requirement: 8 Remote Config key với default values
+### Requirement: 9 Remote Config key với default values
 Hệ thống SHALL sử dụng các key sau với default values (áp dụng khi chưa có giá trị từ server):
 
 | Key | Default | Ý nghĩa |
@@ -17,6 +17,7 @@ Hệ thống SHALL sử dụng các key sau với default values (áp dụng khi
 | `timer_screen_native_ad_enabled` | false | Bật native ad trên timer screen (A/B sau) |
 | `preset_free_limit` | -1 | Giới hạn preset (không giới hạn) |
 | `custom_sound_unlock_hours` | 24 | Thời hạn Rewarded unlock tạm thời |
+| `reminder_reserved_slots` | 10 | Ngân sách notification dành riêng cho RoutineSchedule (iOS budget-split, spec scheduled-routine) |
 
 #### Scenario: Giá trị mặc định khi chưa fetch
 - **WHEN** app mới cài, chưa fetch được Remote Config (hoặc chưa có network)

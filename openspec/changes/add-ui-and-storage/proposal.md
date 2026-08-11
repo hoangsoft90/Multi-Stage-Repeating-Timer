@@ -30,7 +30,7 @@ TimerEngine (Phase 0) đã xong nhưng chưa có cách nào để user tạo rou
 
 ## Impact
 
-- **Code mới**: `src/app/` (app shell, router, theme), `src/features/home/`, `src/features/editor/`, `src/features/timer/` (Timer Running screen + timer store), `src/features/settings/`, `src/core/storage/` (repos AsyncStorage), `src/core/models/` (Preset, Stage, TimerSession).
+- **Code mới**: `src/app/` (screens: `index` Home, `preset/[id]` Editor, `timer` Timer Running, `settings` — app shell, router, theme), `src/features/timer/` (timer-store Zustand bọc engine), `src/features/settings/` (settings-store), `src/features/presets/` (presets-store), `src/core/storage/` (repos AsyncStorage), `src/core/timer/` (models — Preset, Stage, TimerSession).
 - **Dependencies mới**: `zustand`, `@react-native-async-storage/async-storage`, `expo-router`, `expo-system-ui` (theme), `expo-application` (About/version).
 - **Phụ thuộc**: TimerEngine từ change `add-timer-engine` (đã hoàn thành trước).
 - **Hệ thống liên quan**: Phase 3 sẽ thêm âm thanh/rung/notification; Phase 2 thêm lịch nền — UI phase này chỉ render theo event engine, không tự chuyển state.

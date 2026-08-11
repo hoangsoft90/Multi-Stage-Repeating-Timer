@@ -1,12 +1,12 @@
 ## 1. PlatformScheduler abstraction
 
 - [x] 1.1 Định nghĩa interface `PlatformScheduler` (scheduleAt, cancelAll, cancelByIds, hasExactAlarmPermission, requestExactAlarmPermission)
-- [x] 1.2 Tạo `CoverageCalculator` (pure TS): estimatedCoverage = tổng duration 50 transition kế tiếp từ stagesSnapshot + repeatMode
+- [x] 1.2 Tạo `CoverageCalculator` (pure TS, `src/features/background/coverage.ts`): `estimatedCoverageMs` (sum duration N transition) + `exceedsNotificationWindow` (stageCount × rounds > N) — Editor iOS dùng với `effectiveMaxStageQueue` (budget-split)
 - [x] 1.3 Unit test CoverageCalculator (forever dài, once ngắn, fixedCount trung bình)
 
 ## 2. expo-notifications setup
 
-- [x] 2.1 Cài `expo-notifications`, `expo-intent-launcher`, `expo-background-fetch`, `expo-task-manager`; cấu hình config plugin trong app.json
+- [x] 2.1 Cài `expo-notifications` + `expo-intent-launcher`; cấu hình config plugin (expo-notifications + UIBackgroundModes fetch) trong app.json — `expo-background-fetch`/`expo-task-manager` **KHÔNG được cài** (background task iOS chưa implement, xem 4.3)
 - [x] 2.2 app.json: `android.permissions: ["android.permission.SCHEDULE_EXACT_ALARM"]`, iOS background modes (fetch)
 - [ ] 2.3 Android notification channel (importance high) + handler khi notification fire (foreground/background)
 
@@ -19,7 +19,7 @@
 
 ## 4. iOS scheduler
 
-- [x] 4.1 Implement `IosScheduler`: cancelAllScheduledNotificationsAsync → reconcile → schedule tối đa 50 notification kế tiếp từ anchor=now (số 50 từ RC `max_scheduled_transitions_ios`)
+- [x] 4.1 Implement `IosScheduler`: cancelAllScheduledNotificationsAsync → reconcile → schedule notification cho **transition kế tiếp** tại stageEndsAt (runtime KHÔNG pre-schedule queue 50 — 1 transition/lần, ID deterministic `"{session.id}_{round}_{stageIndex}"`; mỗi start/resume/cold-start cancelAll + reschedule). Số 50 (`max_scheduled_transitions_ios`) + budget-split chỉ dùng cho coverage-warning Editor (`src/features/background/coverage.ts`)
 - [x] 4.2 Notification ID deterministic `"{session.id}_{round}_{stageIndex}"`; cancel đúng theo ID khi Pause/Skip/Stop/reschedule (query qua getAllScheduledNotificationsAsync)
 - [ ] 4.3 Đăng ký background task (expo-background-fetch + task-manager): reconcile + reschedule nếu còn stage (best-effort)
 

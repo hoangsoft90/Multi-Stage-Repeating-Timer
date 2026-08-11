@@ -6,7 +6,7 @@ Capability `monetization` định nghĩa vị trí và điều kiện hiển th�
 
 ### Requirement: Bảng placement ad (đóng băng)
 Hệ thống SHALL hiển thị ad đúng 4 placement:
-- **App Open**: cold/warm start, chỉ khi `!hasActiveSession` và cooldown đã qua.
+- **App Open**: cold/warm start, chỉ khi `!hasActiveSession` và cooldown đã qua. ⚠️ Hiện đang **TẮT mặc định** (`PLACEMENT_ENABLED.appOpen = false` — quyết định product, ghi rõ trong `ads-config.ts`); bật lại bằng cách flip cờ này.
 - **Interstitial Post-Stop/Completed**: sau Stop thủ công hoặc session tự kết thúc, cooldown 240s giữa 2 lần, tối đa 1 lần mỗi phiên.
 - **Native/Banner Home**: mỗi lần mở Home.
 - **Rewarded**: user chủ động bấm unlock (tạm thời 24h custom sound).

@@ -12,7 +12,7 @@
    ```json
    ["expo-widgets", {
      "bundleIdentifier": "com.looptimer.app",
-     "groupIdentifier": "group.com.looptimer",
+     "groupIdentifier": "group.com.looptimer.app",
      "enablePushNotifications": false,
      "widgets": [{ "name": "Timer", "displayName": "LoopTimer", "description": "Timer đang chạy", "supportedFamilies": ["systemSmall", "systemMedium"] }]
    }]

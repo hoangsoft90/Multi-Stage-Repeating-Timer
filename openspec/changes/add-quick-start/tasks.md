@@ -10,7 +10,7 @@
 
 ## 3. Quick Routine
 
-- [x] 3.1 `src/features/quick/quick-routine.ts`: `QUICK_SESSION_PRESET_ID = 'temp_quick_session'`
+- [x] 3.1 `QUICK_SESSION_PRESET_ID = 'temp_quick_session'` khai trong `src/features/routine/routine-schedule.ts` (không tồn tại thư mục `src/features/quick/` — QuickRoutineCard là component ở `src/components/quick-routine-card.tsx`)
 - [x] 3.2 Home: form Quick Routine (Work/Break/Repeat + Start) — start trực tiếp không qua Editor
 - [x] 3.3 CompletionDialog: khi completion.presetId === temp_quick_session → nút "Lưu thành Preset" + dialog nhập tên + tạo preset
 - [x] 3.4 Session log quick session: presetName "Quick Routine"

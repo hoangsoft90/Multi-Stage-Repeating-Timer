@@ -1,6 +1,6 @@
 ## Purpose
 
-Capability `background-scheduling` định nghĩa cách app nhờ OS đánh thức đúng lúc stage kết thúc khi app ở nền/kill: Android Exact Alarm + khôi phục sau reboot + FGS opt-in; iOS queue tối đa 50 notification + BGAppRefreshTask best-effort; cùng quy tắc notification ID và cancel/reschedule. Mục tiêu là state luôn đúng khi user quay lại và thông báo transition đáng tin cậy trong giới hạn nền tảng đã công khai.
+Capability `background-scheduling` định nghĩa cách app nhờ OS đánh thức đúng lúc stage kết thúc khi app ở nền/kill: Android Exact Alarm + khôi phục sau reboot + FGS opt-in; iOS schedule transition kế tiếp (runtime 1 notification/lần, trần 50 dành cho coverage-warning Editor) + BGAppRefreshTask deferred; cùng quy tắc notification ID và cancel/reschedule. Mục tiêu là state luôn đúng khi user quay lại và thông báo transition đáng tin cậy trong giới hạn nền tảng đã công khai.
 
 ## ADDED Requirements
 
@@ -34,48 +34,48 @@ Hệ thống SHALL đảm bảo các notification/alarm đã lên lịch đượ
 - **WHEN** sau reboot session đọc từ storage bị corrupt/không phục hồi được
 - **THEN** app xử lý graceful "Timer stopped after reboot" — không crash, không alarm treo
 
-### Requirement: Android — FGS opt-in fallback (tùy chọn)
-Hệ thống SHALL chỉ đề xuất bật "Keep timer alive" (Foreground Service) khi `missed_transition_rate` đo được trên thiết bị vượt ngưỡng (> 15%, theo Remote Config). Khi user bật, hệ thống SHALL chạy foreground service với `foregroundServiceType=specialUse`, hiện **persistent notification bắt buộc không thể ẩn** trong lúc timer chạy, và khai justification string đầy đủ. Dialog xin bật SHALL nói rõ trade-off: "Sẽ hiện thông báo cố định trên thanh trạng thái trong lúc timer chạy để đảm bảo không bị hệ thống tắt."
+### Requirement: Android — FGS opt-in (JS dialog đã làm; native foreground service CHƯA IMPLEMENT — defer)
+Hệ thống SHALL chỉ đề xuất bật "Keep timer alive" khi `missed_transition_rate` đo được trên thiết bị vượt ngưỡng (> 15%, theo Remote Config) — **phần này đã implement**: dialog opt-in (`fgs-trigger.ts` pub/sub + `fgs-dialog.tsx`, dismiss persist qua `settings.fgsDialogDismissed`, nút hiện chỉ điều hướng "Mở Settings"). Việc chạy foreground service thật với `foregroundServiceType=specialUse`, **persistent notification bắt buộc không thể ẩn** + justification string **chưa implement** — chờ EAS build phase (tasks 3.4).
 
 #### Scenario: Chỉ đề xuất FGS khi vượt ngưỡng
 - **WHEN** missed_transition_rate trên thiết bị = 20% (> 15%)
-- **THEN** hệ thống hiện gợi ý bật "Keep timer alive"; khi rate ≤ 15% thì không gợi ý
+- **THEN** hệ thống hiện dialog gợi ý "Keep timer alive"; khi rate ≤ 15% thì không hiện
 
-#### Scenario: Bật FGS hiện persistent notification
-- **WHEN** user bật Keep timer alive và timer chạy
+#### Scenario: Bật FGS hiện persistent notification (chờ implement native)
+- **WHEN** (sau khi implement native) user bật Keep timer alive và timer chạy
 - **THEN** thanh trạng thái hiện notification persistent của timer mà user không thể ẩn cho tới khi dừng timer
 
-### Requirement: iOS — Queue tối đa 50 notification
-Trên iOS, hệ thống SHALL lên lịch tối đa 50 local notification kế tiếp theo thứ tự stage-end (cấu hình qua Remote Config `max_scheduled_transitions_ios`, mặc định 50). Khi start/resume/cold-start, hệ thống SHALL `cancelAllPending` rồi reconcile và schedule lại từ trạng thái hiện tại (anchor = now, cộng dồn duration từng stage). Hệ thống SHALL không đảm bảo notification liên tục sau khi 50 notification đã fire mà app chưa được mở lại — đây là known limitation công khai.
+### Requirement: iOS — schedule transition kế tiếp (runtime không queue 50)
+Trên iOS, hệ thống SHALL lên lịch local notification cho transition KẾ TIẾP tại `stageEndsAt` với ID deterministic `"{session.id}_{round}_{stageIndex}"`. Khi start/resume/cold-start, hệ thống SHALL `cancelAllPending` rồi reconcile và schedule lại từ trạng thái hiện tại. Runtime KHÔNG pre-schedule hàng đợi 50 notification — trần `max_scheduled_transitions_ios` (50) và budget-split (`effectiveMax = 64 − reminder_reserved_slots − activeScheduleCount`) chỉ được dùng cho coverage-warning Editor (`exceedsNotificationWindow`). Hệ thống SHALL không đảm bảo notification liên tục khi app bị treo/kill: chỉ transition kế tiếp được schedule, muốn tiếp tục nhận thông báo phải mở lại app để reschedule — known limitation công khai; Live Activity (v1.4, iOS 16.1+) là kênh hiển thị realtime thay thế.
 
 #### Scenario: Start session dài
-- **WHEN** user start preset HIIT 40/20 (repeat forever, tổng 50+ transition)
-- **THEN** hệ thống schedule đúng 50 notification đầu tiên tính từ now
+- **WHEN** user start preset HIIT 40/20 (repeat forever) và app ở nền
+- **THEN** hệ thống schedule notification cho transition kế tiếp tại stageEndsAt của stage hiện tại
 
-#### Scenario: 50 notification đã fire, app chưa mở lại
-- **WHEN** cả 50 notification đã fire và user chưa mở lại app
-- **THEN** không có notification nào thêm được lên lịch; khi user mở lại app, reconcile trả về đúng stage hiện tại
+#### Scenario: Notification đã fire, app chưa mở lại
+- **WHEN** notification kế tiếp đã fire và user chưa mở lại app
+- **THEN** không có notification nào thêm được lên lịch (runtime chỉ schedule 1 transition/lần); khi user mở lại app, reconcile trả về đúng stage hiện tại và reschedule transition kế tiếp
 
 #### Scenario: Resume sau pause
 - **WHEN** user resume session đang PAUSED
-- **THEN** hệ thống cancelAllPending rồi schedule lại 50 notification từ trạng thái hiện tại
+- **THEN** hệ thống cancelAllPending rồi schedule lại notification cho transition kế tiếp từ trạng thái hiện tại
 
-### Requirement: iOS — BGAppRefreshTask best-effort
-Hệ thống SHALL đăng ký `BGAppRefreshTask` để iOS *có thể* (không đảm bảo) đánh thức app ngắn hạn nhằm reschedule thêm notification khi queue cạn. Task này SHALL không được dùng cho real-time; nó chỉ tăng xác suất coverage dài hơn.
+### Requirement: iOS — BGAppRefreshTask best-effort (CHƯA IMPLEMENT — defer)
+Hệ thống ĐÃ THIẾT KẾ đăng ký `BGAppRefreshTask` để iOS *có thể* (không đảm bảo) đánh thức app ngắn hạn nhằm reschedule thêm notification — **nhưng chưa implement trong code hiện tại** (`expo-background-fetch`/`expo-task-manager` chưa cài; `UIBackgroundModes: [fetch]` đã khai trong app.json). Task này SHALL không được dùng cho real-time; chỉ tăng xác suất coverage dài hơn. Ghi rõ là work còn lại (tasks 4.3) — không ảnh hưởng state engine (reconcile khi mở lại vẫn đúng).
 
-#### Scenario: BGTask chạy khi queue cạn
-- **WHEN** iOS chạy BGAppRefreshTask lúc queue notification đang cạn và session còn chạy
+#### Scenario: BGTask chạy khi notification đã fire (chưa verify — chờ implement)
+- **WHEN** (sau khi implement) iOS chạy BGAppRefreshTask lúc notification kế tiếp đã fire và session còn chạy
 - **THEN** hệ thống reschedule thêm notification từ trạng thái hiện tại nếu còn stage kế
 
 ### Requirement: iOS — Coverage warning trong Editor
-Hệ thống SHALL ước tính `estimatedCoverage = tổng duration của 50 transition kế tiếp`. Nếu preset cần hơn 50 transition trước khi user dự kiến quay lại (heuristic: estimatedCoverage < khoảng thời gian mong đợi), Editor SHALL hiện cảnh báo: "Routine dài này có thể cần mở lại app sau khoảng ~X phút để tiếp tục nhận thông báo đầy đủ." Cảnh báo này SHALL chỉ xuất hiện trên iOS, không trên Android.
+Trên iOS, Editor (`src/app/preset/[id].tsx`) SHALL hiện cảnh báo khi preset cần nhiều transition hơn khả năng schedule: `exceedsNotificationWindow(preset, maxTransitions)` với `maxTransitions = effectiveMaxStageQueue(reminder_reserved_slots, activeSchedules, max_scheduled_transitions_ios)` (budget-split: `64 − reserved − active` — từ `src/features/routine/routine-schedule.ts`). Cảnh báo SHALL chỉ xuất hiện trên iOS, không trên Android.
 
-#### Scenario: Preset vượt cửa sổ 50 notification
-- **WHEN** preset có tổng duration của 50 transition kế tiếp < khoảng thời gian dự kiến (vd HIIT forever) và user ở iOS
+#### Scenario: Preset vượt cửa sổ notification hiệu dụng
+- **WHEN** preset có `stageCount × rounds > effectiveMaxStageQueue` (vd HIIT forever, có schedule active) và user ở iOS
 - **THEN** Editor hiện cảnh báo coverage-window
 
 #### Scenario: Preset ngắn không cảnh báo
-- **WHEN** preset kết thúc trong < 50 transition (vd Pomodoro once)
+- **WHEN** preset kết thúc trong ≤ effectiveMax transition (vd Pomodoro once)
 - **THEN** Editor không hiện cảnh báo
 
 #### Scenario: Không cảnh báo trên Android
