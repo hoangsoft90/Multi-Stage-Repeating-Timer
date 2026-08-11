@@ -1,7 +1,7 @@
 # LoopTimer — Hướng dẫn EAS Build
 
-> **Cập nhật:** 2026-08-10 · Expo SDK 57 · React Native 0.86 · EAS CLI ≥ 21.0.0
-> **Trạng thái:** Code hoàn thành, app.json và eas.json đã cấu hình sẵn. Cần Firebase files + credentials thật để build.
+> **Cập nhật:** 2026-08-11 · Expo SDK 57 · React Native 0.86 · EAS CLI ≥ 21.0.0
+> **Trạng thái:** Code hoàn thành, app.json và eas.json đã cấu hình sẵn; Firebase files (`google-services.json` + `GoogleService-Info.plist`) đã có ở root; UMP consent + non-personalized ads fallback đã implement (tasks 4.2); **Android đã dán AdMob real IDs** (App ID + banner/interstitial/rewarded). Còn chờ: iOS AdMob IDs, store accounts để release.
 
 ---
 
@@ -408,13 +408,37 @@ AdMob App ID đã được cấu hình trong `app.json`:
 [
   "react-native-google-mobile-ads",
   {
-    "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+    "androidAppId": "ca-app-pub-6917313063209470~4808606529",
     "iosAppId": "ca-app-pub-3940256099942544~1458002511"
   }
 ]
 ```
 
-> ID hiện tại là **test ID** của Google — an toàn khi build và test, nhưng **không sinh doanh thu**. Khi release, thay bằng ID thật từ AdMob dashboard.
+> **Android đã dùng App ID thật** (app `ca-app-pub-6917313063209470`) — sinh doanh thu thật, **không click/test ad bằng ID thật khi dev** (dính invalid traffic → treo account).
+>
+> **iOS vẫn là test ID** của Google — an toàn khi build và test, không sinh doanh thu. Khi release iOS, thay bằng App ID thật từ AdMob dashboard (tạo app AdMob iOS riêng với bundle `com.looptimer.app`).
+
+### 7.5 react-native-google-mobile-ads — PIN 16.3.4 (bắt buộc)
+
+> ⚠️ **Đang pin exact `16.3.4` trong `package.json` — KHÔNG nâng lên 16.4.x trước khi verify.**
+>
+> 16.4.0 kéo về `play-services-ads:25.4.0`, được build bằng **Kotlin 2.3 metadata** — trong khi RN 0.86 (Expo SDK 57) ship Kotlin 2.1.20 → Gradle fail: `Module was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.3.0, expected version is 2.1.0.` (build preview 8/10 errored vì lỗi này).
+>
+> Workaround chính thức từ [invertase/react-native-google-mobile-ads#863](https://github.com/invertase/react-native-google-mobile-ads/issues/863): pin **16.3.4** (ads 25.0.0 — hợp Kotlin 2.1). PR gốc [#866](https://github.com/invertase/react-native-google-mobile-ads/pull/866) chưa merge.
+>
+> 16.3.4 vẫn đủ mọi API đang dùng: `AdsConsent` (UMP), `requestNonPersonalizedAdsOnly`, `getUserChoices().selectPersonalisedAds`, `AppOpenAd/InterstitialAd/RewardedAd/BannerAd`, `TestIds`. Khi nâng version, nhớ **build cloud thử trước khi commit**.
+
+### 7.6 UMP consent + non-personalized ads (đã implement)
+
+Consent GDPR/CCPA xử lý qua module **`AdsConsent` sẵn có trong `react-native-google-mobile-ads`** — không cần cài dependency riêng:
+
+- **`consent.gatherConsent()`** chạy ở bootstrap (`src/hooks/use-bootstrap.ts`) — request info + hiện consent form khi cần; no-op trên web/Expo Go.
+- **UMP gate `canRequestAds()`** — trước mỗi lần show ad (interstitial/app-open/rewarded/banner); khi consent required mà chưa có → không request ads.
+- **Non-personalized fallback** — helper thuần `resolveNonPersonalized` (`src/features/monetization/consent.ts`): consent jurisdiction → theo user choice; ngoài jurisdiction → theo ATT (iOS denied/restricted → NPA). Áp dụng qua `requestNonPersonalizedAdsOnly` trên từng ad request.
+- **Settings** có row "Privacy options" (mở `showPrivacyOptionsForm`) khi ads supported.
+- Event `consent_status` log qua Firebase Analytics.
+
+> **Kiểm tra trên dev build:** ATT Denied → ads vẫn serve non-personalized (không fail); UMP form hiện đúng ở EEA.
 
 ---
 
@@ -644,8 +668,8 @@ eas device:create
 ### 🔴 Bắt buộc
 
 - [ ] **Firebase files:** `google-services.json` + `GoogleService-Info.plist` đặt cạnh `app.json`
-- [ ] **AdMob ID thật** (đã thay test ID trong `app.json`)? Nếu chưa muốn thay ID thật, build preview/test vẫn dùng test ID an toàn.
-- [ ] **Privacy Policy URL** thật (không `example.com`) trong `src/features/settings/settings-store.tsx`
+- [ ] **AdMob ID thật**: ✅ Android đã thay (App ID + banner/interstitial/rewarded). ⚠️ iOS vẫn test ID — thay trước khi submit iOS.
+- [ ] **Privacy Policy URL** thật (không `example.com`) trong `src/app/settings.tsx` (hằng số `PRIVACY_URL` cạnh `STORE_URL`)
 - [ ] **Apple Developer account** active ($99/năm) — build iOS cần
 - [ ] **Google Play Developer account** ($25, 1 lần) — submit Android cần
 - [ ] **EAS login** — `eas whoami` trả về tên của bạn
@@ -653,7 +677,7 @@ eas device:create
 ### 🟠 Nên làm
 
 - [ ] **Sao lưu keystore:** `eas credentials` → Android → Download keystore → lưu vào 1Password/Bitwarden
-- [ ] **Push Remote Config keys** lên Firebase Console (8 keys — xem guide xuất bản)
+- [ ] **Push 9 Remote Config keys** lên Firebase Console (gồm `reminder_reserved_slots` — xem `src/platform/impl.native.ts` DEFAULT_CONFIG)
 - [ ] **Test dev build** trước — `eas build --profile development` để verify native modules hoạt động
 - [ ] **Chạy typecheck + test** — `npm run typecheck && npm test`
 - [ ] **Set app version** nếu cần reset: `eas build:version:set -p android -c 1` (nếu muốn production start từ 1)

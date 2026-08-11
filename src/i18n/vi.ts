@@ -111,6 +111,7 @@ export const vi = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': 'GÓI ÂM THANH',
   'settings.customSound': 'Âm thanh tùy chỉnh',
+  'settings.privacyOptions': 'Tùy chọn quyền riêng tư',
   'settings.customSoundLocked': 'Xem 1 quảng cáo để mở khóa 24 giờ',
   'settings.customSoundUnlocked': 'Đã mở khóa · còn {{time}}',
   'reward.unlockOk': 'Đã mở khóa âm thanh tùy chỉnh!',

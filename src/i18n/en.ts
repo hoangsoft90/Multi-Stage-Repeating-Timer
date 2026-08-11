@@ -113,6 +113,7 @@ export const en = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': 'SOUND PACKS',
   'settings.customSound': 'Custom sounds',
+  'settings.privacyOptions': 'Privacy options',
   'settings.customSoundLocked': 'Watch an ad to unlock 24h',
   'settings.customSoundUnlocked': 'Unlocked · {{time}} left',
   'reward.unlockOk': 'Custom sounds unlocked!',

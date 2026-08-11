@@ -15,6 +15,8 @@ import { platformMock } from '../../test-utils/platform-mock';
 import { useTimerStore } from '../../features/timer/timer-store';
 import { usePresetsStore } from '../../features/presets/presets-store';
 import { useSettingsStore } from '../../features/settings/settings-store';
+import { useGoalsStore } from '../../features/goals/goals-store';
+import { weekKey } from '../../features/goals/weekly-goals';
 import { SessionLogRepo } from '../../core/storage/repos';
 import { Preset } from '../../core/timer/models';
 
@@ -77,6 +79,7 @@ beforeEach(async () => {
   clearDialog();
   await AsyncStorage.clear();
   usePresetsStore.setState({ presets: [], loaded: false });
+  useGoalsStore.setState({ goal: null, loaded: false });
   useTimerStore.setState({ recovery: null, completion: null });
   await act(async () => {
     await useSettingsStore.getState().set({ onboardingDone: true });
@@ -172,6 +175,64 @@ describe('CompletionDialog (v1.2)', () => {
     });
     // Sau khi lưu, khối nhập ẩn đi, hiện trạng thái đã lưu.
     expect(screen.getByText(/Đã lưu ghi chú/)).toBeTruthy();
+  });
+
+  it('goal progress + mood picker hiển thị cùng lúc (v1.5 kết hợp)', async () => {
+    // Seed one completed session in the CURRENT week (endedAt = now).
+    const repo = new SessionLogRepo();
+    await repo.add({
+      id: 'log_combo',
+      presetId: 'p1',
+      presetName: 'My HIIT',
+      startedAt: Date.now() - 60_000,
+      endedAt: Date.now(),
+      durationMs: 60_000,
+      stageCount: 2,
+      status: 'completed',
+    });
+    // Goal: 3 sessions/week, all presets.
+    useGoalsStore.setState({
+      goal: { id: 'g1', presetId: null, targetSessions: 3, weekStart: weekKey(Date.now()), schemaVersion: 1 },
+      loaded: true,
+    });
+    useTimerStore.setState({
+      completion: { sessionId: 'log_combo', presetId: 'p1', presetName: 'My HIIT', durationMs: 60_000, streak: 1 },
+    });
+    await render(<CompletionDialog />);
+    // Weekly goal block: progress label + remaining text.
+    await waitFor(() => expect(screen.getByText('Mục tiêu tuần: 1/3')).toBeTruthy());
+    expect(screen.getByText('Còn 2 phiên nữa')).toBeTruthy();
+    // Session-notes block renders at the same time: mood picker + note toggle.
+    expect(screen.getByLabelText('Tuyệt vời')).toBeTruthy(); // 🙂
+    expect(screen.getByText('Thêm ghi chú')).toBeTruthy();
+    expect(screen.getByText('Cảm nhận của bạn?')).toBeTruthy();
+  });
+
+  it('goal đã đạt: progress đầy + "Đã đạt" + mood picker vẫn hiển thị (v1.5 kết hợp)', async () => {
+    const repo = new SessionLogRepo();
+    await repo.add({
+      id: 'log_reached',
+      presetId: 'p1',
+      presetName: 'My HIIT',
+      startedAt: Date.now() - 60_000,
+      endedAt: Date.now(),
+      durationMs: 60_000,
+      stageCount: 2,
+      status: 'completed',
+    });
+    // Goal reached exactly: 1/1.
+    useGoalsStore.setState({
+      goal: { id: 'g2', presetId: null, targetSessions: 1, weekStart: weekKey(Date.now()), schemaVersion: 1 },
+      loaded: true,
+    });
+    useTimerStore.setState({
+      completion: { sessionId: 'log_reached', presetId: 'p1', presetName: 'My HIIT', durationMs: 60_000, streak: 2 },
+    });
+    await render(<CompletionDialog />);
+    await waitFor(() => expect(screen.getByText('Mục tiêu tuần: 1/1')).toBeTruthy());
+    expect(screen.getByText('Đã đạt mục tiêu tuần! 🎉')).toBeTruthy();
+    // Mood picker is unaffected by a reached goal.
+    expect(screen.getByLabelText('Tuyệt vời')).toBeTruthy();
   });
 
   it('completion quick session → "Lưu thành Preset" tạo preset mới (v1.3)', async () => {

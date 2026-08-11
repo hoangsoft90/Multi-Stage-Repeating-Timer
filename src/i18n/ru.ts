@@ -101,6 +101,7 @@ export const ru = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': 'ЗВУКОВЫЕ ПАКЕТЫ',
   'settings.customSound': 'Свои звуки',
+  'settings.privacyOptions': 'Настройки конфиденциальности',
   'settings.customSoundLocked': 'Посмотрите рекламу, чтобы разблокировать на 24 ч',
   'settings.customSoundUnlocked': 'Разблокировано · осталось {{time}}',
   'reward.unlockOk': 'Свои звуки разблокированы!',

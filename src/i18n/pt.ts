@@ -101,6 +101,7 @@ export const pt = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': 'PACOTES DE SOM',
   'settings.customSound': 'Sons personalizados',
+  'settings.privacyOptions': 'Opções de privacidade',
   'settings.customSoundLocked': 'Assista a um anúncio para desbloquear 24 h',
   'settings.customSoundUnlocked': 'Desbloqueado · restam {{time}}',
   'reward.unlockOk': 'Sons personalizados desbloqueados!',

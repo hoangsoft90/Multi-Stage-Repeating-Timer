@@ -101,6 +101,7 @@ export const id = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': 'PAKET SUARA',
   'settings.customSound': 'Suara kustom',
+  'settings.privacyOptions': 'Opsi privasi',
   'settings.customSoundLocked': 'Tonton iklan untuk membuka 24 jam',
   'settings.customSoundUnlocked': 'Terbuka · sisa {{time}}',
   'reward.unlockOk': 'Suara kustom terbuka!',

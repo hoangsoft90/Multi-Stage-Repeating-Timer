@@ -143,7 +143,7 @@
 | Rewarded | Fullscreen | Settings → GÓI ÂM THANH → xem ad mở khóa 24h | ✅ code xong (UI + service) |
 | App Open | Fullscreen | Cold start, không có session | 🔕 **Đang TẮT** (`PLACEMENT_ENABLED.appOpen = false`) |
 
-- **ID đang dùng:** demo App ID của Google trong `app.json` + **test ad units** (hiện "Test Ad", KHÔNG có doanh thu). Chỗ duy nhất cần sửa khi có tài khoản thật: `src/features/monetization/ads-config.ts` (REAL_UNIT_IDS) + App ID trong `app.json`.
+- **ID đang dùng:** Android đã dùng **real AdMob IDs** (App ID `ca-app-pub-6917313063209470~4808606529` trong `app.json` + banner/interstitial/rewarded trong `REAL_UNIT_IDS`); iOS vẫn dùng **test ad units** ("Test Ad", KHÔNG có doanh thu) — tạo app AdMob iOS riêng + dán vào `REAL_UNIT_IDS.ios` khi cần.
 - **Eligibility đọc Remote Config** (không hard-code): cooldown, max-per-session.
 - Frequency cap chỉ burn khi ad hiện thật; load fail → analytics `ad_shown=false` + không crash.
 - `adManager.supported` = getter kiểm tra SDK thật → **Expo Go/web tự ẩn quảng cáo** (không CTA chết).

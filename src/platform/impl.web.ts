@@ -7,6 +7,7 @@ import {
   AdManager,
   AttService,
   AudioService,
+  ConsentService,
   HapticsService,
   LiveActivityBridge,
   NotificationsService,
@@ -301,12 +302,32 @@ class WebAttService implements AttService {
   }
 }
 
+// ------------------------------------------------------------------ Consent
+class WebConsentService implements ConsentService {
+  async gatherConsent(): Promise<boolean> {
+    return true; // no ads on web — nothing to consent to
+  }
+  async getConsentStatus(): Promise<'not_required'> {
+    return 'not_required';
+  }
+  async canRequestAds(): Promise<boolean> {
+    return true;
+  }
+  async shouldUseNonPersonalized(): Promise<boolean> {
+    return false;
+  }
+  async showPrivacyOptionsForm(): Promise<boolean> {
+    return false;
+  }
+}
+
 export const scheduler: Scheduler = new WebScheduler();
 export const notifications: NotificationsService = new WebNotifications();
 export const audio: AudioService = new WebAudioService();
 export const haptics: HapticsService = new WebHapticsService();
 export const wakeLock: WakeLockService = new WebWakeLockService();
 export const adManager: AdManager = new WebAdManager();
+export const consent: ConsentService = new WebConsentService();
 export const remoteConfig: RemoteConfigService = new WebRemoteConfig();
 export const observability: ObservabilityService = new LogObservabilityService();
 export const att: AttService = new WebAttService();

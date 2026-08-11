@@ -56,7 +56,7 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "androidAppId": "ca-app-pub-6917313063209470~4808606529",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511",
           "skAdNetworkItems": [
             "cstr6suwn9.skadnetwork",
@@ -154,8 +154,8 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
             "buildToolsVersion": "36.0.0"
           },
           "ios": {

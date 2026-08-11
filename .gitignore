@@ -34,6 +34,9 @@ yarn-error.*
 # local env files
 .env*.local
 
+# old Firebase config backup (contains legacy credentials — never push)
+google-services-old.json
+
 # typescript
 *.tsbuildinfo
 

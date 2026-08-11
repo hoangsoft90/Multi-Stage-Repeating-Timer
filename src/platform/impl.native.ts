@@ -23,6 +23,8 @@ import {
   AdManager,
   AttService,
   AudioService,
+  ConsentService,
+  ConsentStatus,
   HapticsService,
   LiveActivityBridge,
   NotificationsService,
@@ -36,6 +38,7 @@ import {
   WidgetBridge,
 } from './types';
 import { PLACEMENT_ENABLED, resolveUnitId } from '../features/monetization/ads-config';
+import { resolveNonPersonalized } from '../features/monetization/consent';
 import { SOUND_SOURCES } from '../features/sounds/sound-pack';
 import { notifyMissedRateHigh } from '../features/background/fgs-trigger';
 import { snapshotToActivityContent, TimerActivityContent, TimerActivityLabels } from '../features/widget/activity-content';
@@ -327,8 +330,10 @@ class NativeAdManager implements AdManager {
     const Ads = loadAds();
     if (!Ads) return false; // Expo Go / no SDK
     try {
+      if (!(await consent.canRequestAds())) return false; // UMP gate
       const ad = Ads.InterstitialAd.createForAdRequest(
         resolveUnitId(Platform.OS === 'android' ? 'android' : 'ios', 'interstitial', Ads.TestIds.INTERSTITIAL),
+        { requestNonPersonalizedAdsOnly: await consent.shouldUseNonPersonalized() },
       );
       const shown = await new Promise<boolean>((resolve) => {
         ad.addAdEventListener(Ads.AdEventType.LOADED, () => {
@@ -357,9 +362,11 @@ class NativeAdManager implements AdManager {
     const Ads = loadAds();
     if (!Ads) return false;
     try {
+      if (!(await consent.canRequestAds())) return false; // UMP gate
       this.lastAppOpen = Date.now();
       const ad = Ads.AppOpenAd.createForAdRequest(
         resolveUnitId(Platform.OS === 'android' ? 'android' : 'ios', 'appOpen', Ads.TestIds.APP_OPEN),
+        { requestNonPersonalizedAdsOnly: await consent.shouldUseNonPersonalized() },
       );
       const shown = await new Promise<boolean>((resolve) => {
         ad.addAdEventListener(Ads.AdEventType.LOADED, () => {
@@ -382,8 +389,10 @@ class NativeAdManager implements AdManager {
     const Ads = loadAds();
     if (!Ads) return false;
     try {
+      if (!(await consent.canRequestAds())) return false; // UMP gate
       const ad = Ads.RewardedAd.createForAdRequest(
         resolveUnitId(Platform.OS === 'android' ? 'android' : 'ios', 'rewarded', Ads.TestIds.REWARDED),
+        { requestNonPersonalizedAdsOnly: await consent.shouldUseNonPersonalized() },
       );
       const earned = await new Promise<boolean>((resolve) => {
         let rewarded = false;
@@ -683,7 +692,7 @@ class NativeLiveActivityBridge implements LiveActivityBridge {
 }
 
 // --------------------------------------------------------------------- ATT
-class NativeAttService implements AttService {
+const nativeAttService = new (class NativeAttService implements AttService {
   async requestTrackingPermission(): Promise<'authorized' | 'denied' | 'restricted' | 'undetermined'> {
     try {
       if (Platform.OS !== 'ios') return 'denied';
@@ -691,6 +700,112 @@ class NativeAttService implements AttService {
       return status === 'granted' ? 'authorized' : status;
     } catch {
       return 'undetermined';
+    }
+  }
+
+  /** Read the current ATT status WITHOUT prompting (no-op on non-iOS). */
+  async getTrackingStatus(): Promise<'authorized' | 'denied' | 'restricted' | 'undetermined'> {
+    try {
+      if (Platform.OS !== 'ios') return 'undetermined';
+      const { status } = await Tracking.getTrackingPermissionsAsync();
+      return status === 'granted' ? 'authorized' : status;
+    } catch {
+      return 'undetermined';
+    }
+  }
+})();
+
+// ------------------------------------------------------------------ Consent
+// Google UMP (User Messaging Platform) via the ads SDK's AdsConsent module
+// (react-native-google-mobile-ads bundles it — no extra dependency). Runs the
+// consent form flow for GDPR/CCPA regions; outside those regions it resolves
+// to NOT_REQUIRED and the ATT fallback drives personalization. Lazy-loaded
+// like the rest of the ads module (no-op on web / Expo Go).
+class NativeConsentService implements ConsentService {
+  private cachedStatus: ConsentStatus = 'unknown';
+  private cachedCanRequestAds = true;
+  /** In-flight/complete gather promise — concurrent callers await the SAME run. */
+  private gathering: Promise<boolean> | null = null;
+
+  private mapStatus(status: string | undefined): ConsentStatus {
+    switch (status) {
+      case 'REQUIRED':
+        return 'required';
+      case 'NOT_REQUIRED':
+        return 'not_required';
+      case 'OBTAINED':
+        return 'obtained';
+      default:
+        return 'unknown';
+    }
+  }
+
+  async gatherConsent(): Promise<boolean> {
+    if (this.gathering) return this.gathering;
+    this.gathering = this.runGather().finally(() => {
+      // Allow a RE-gather on a later cold start (app restarted) — the UMP SDK
+      // persists its own state; this caches per-process only.
+    });
+    return this.gathering;
+  }
+
+  private async runGather(): Promise<boolean> {
+    const Ads = loadAds();
+    if (!Ads || !Ads.AdsConsent) {
+      this.cachedStatus = 'not_required';
+      this.cachedCanRequestAds = true;
+      return true; // Expo Go / no SDK — ads are no-ops anyway.
+    }
+    try {
+      const info = await Ads.AdsConsent.gatherConsent();
+      this.cachedStatus = this.mapStatus(info.status);
+      this.cachedCanRequestAds = info.canRequestAds;
+      observability.logEvent('consent_status', { status: this.cachedStatus });
+    } catch {
+      // Offline / form failure — keep safe defaults (canRequestAds = true so
+      // ads can still serve; personalization decided by resolveNonPersonalized).
+      this.cachedStatus = 'unknown';
+      this.cachedCanRequestAds = true;
+    }
+    return this.cachedCanRequestAds;
+  }
+
+  async getConsentStatus(): Promise<ConsentStatus> {
+    await this.gatherConsent();
+    return this.cachedStatus;
+  }
+
+  async canRequestAds(): Promise<boolean> {
+    await this.gatherConsent();
+    return this.cachedCanRequestAds;
+  }
+
+  async shouldUseNonPersonalized(): Promise<boolean> {
+    const att = await nativeAttService.getTrackingStatus();
+    const consentStatus = await this.getConsentStatus();
+    let personalizedConsent: boolean | undefined;
+    if (consentStatus === 'obtained') {
+      try {
+        const Ads = loadAds();
+        if (Ads?.AdsConsent) {
+          const choices = await Ads.AdsConsent.getUserChoices();
+          personalizedConsent = choices.selectPersonalisedAds;
+        }
+      } catch {
+        personalizedConsent = undefined;
+      }
+    }
+    return resolveNonPersonalized({ attStatus: att, consentStatus, personalizedConsent });
+  }
+
+  async showPrivacyOptionsForm(): Promise<boolean> {
+    const Ads = loadAds();
+    if (!Ads?.AdsConsent) return false;
+    try {
+      await Ads.AdsConsent.showPrivacyOptionsForm();
+      return true;
+    } catch {
+      return false;
     }
   }
 }
@@ -701,9 +816,10 @@ export const audio: AudioService = new NativeAudioService();
 export const haptics: HapticsService = new NativeHapticsService();
 export const wakeLock: WakeLockService = new NativeWakeLockService();
 export const adManager: AdManager = new NativeAdManager();
+export const consent: ConsentService = new NativeConsentService();
 export const remoteConfig: RemoteConfigService = new NativeRemoteConfig();
 export const observability: ObservabilityService = new FirebaseObservabilityService();
-export const att: AttService = new NativeAttService();
+export const att: AttService = nativeAttService;
 export const speech: SpeechService = new NativeSpeechService();
 export const share: ShareService = new NativeShareService();
 export const widgetBridge: WidgetBridge = new NativeWidgetBridge();

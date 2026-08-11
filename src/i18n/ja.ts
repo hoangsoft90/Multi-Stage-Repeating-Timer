@@ -101,6 +101,7 @@ export const ja = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': 'サウンドパック',
   'settings.customSound': 'カスタムサウンド',
+  'settings.privacyOptions': 'プライバシー設定',
   'settings.customSoundLocked': '広告を見て24時間アンロック',
   'settings.customSoundUnlocked': 'アンロック済み · 残り{{time}}',
   'reward.unlockOk': 'カスタムサウンドをアンロックしました！',

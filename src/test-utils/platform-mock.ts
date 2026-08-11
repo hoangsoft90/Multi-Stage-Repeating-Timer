@@ -49,6 +49,13 @@ export const platformMock = {
     showInterstitial: jest.fn().mockResolvedValue(false),
     showRewarded: jest.fn().mockResolvedValue(false),
   },
+  consent: {
+    gatherConsent: jest.fn().mockResolvedValue(true),
+    getConsentStatus: jest.fn().mockResolvedValue('not_required'),
+    canRequestAds: jest.fn().mockResolvedValue(true),
+    shouldUseNonPersonalized: jest.fn().mockResolvedValue(false),
+    showPrivacyOptionsForm: jest.fn().mockResolvedValue(false),
+  },
   remoteConfig: {
     getNumber: jest.fn().mockReturnValue(0),
     getBoolean: jest.fn().mockReturnValue(false),

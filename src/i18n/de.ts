@@ -101,6 +101,7 @@ export const de = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': 'SOUND-PACKS',
   'settings.customSound': 'Benutzerdefinierte Sounds',
+  'settings.privacyOptions': 'Datenschutzoptionen',
   'settings.customSoundLocked': 'Werbevideo ansehen, um 24 Std. freizuschalten',
   'settings.customSoundUnlocked': 'Freigeschaltet · noch {{time}}',
   'reward.unlockOk': 'Benutzerdefinierte Sounds freigeschaltet!',

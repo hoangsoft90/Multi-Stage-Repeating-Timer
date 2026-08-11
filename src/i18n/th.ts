@@ -101,6 +101,7 @@ export const th = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': 'ชุดเสียง',
   'settings.customSound': 'เสียงที่กำหนดเอง',
+  'settings.privacyOptions': 'ตัวเลือกความเป็นส่วนตัว',
   'settings.customSoundLocked': 'ดูโฆษณาเพื่อปลดล็อก 24 ชั่วโมง',
   'settings.customSoundUnlocked': 'ปลดล็อกแล้ว · เหลือ {{time}}',
   'reward.unlockOk': 'ปลดล็อกเสียงที่กำหนดเองแล้ว!',

@@ -1,7 +1,7 @@
 # LoopTimer — Hướng dẫn xuất bản lên Google Play & App Store
 
-> **Trạng thái:** READY-TO-PUBLISH (code đã xong, đang chờ các bước setup tài khoản + config bên ngoài).
-> Cập nhật: 2026-08-10 · Expo SDK 57 · React Native 0.86
+> **Trạng thái:** READY-TO-PUBLISH (code đã xong + UMP consent/non-personalized đã implement; **Android đã dán AdMob real IDs**; đang chờ iOS AdMob IDs + các bước setup tài khoản + config bên ngoài).
+> Cập nhật: 2026-08-11 · Expo SDK 57 · React Native 0.86
 
 ---
 
@@ -29,20 +29,22 @@
 **App:** LoopTimer — Multi-Stage Repeating Timer (tập luyện interval).
 **Identity:**
 - Android package: `com.looptimer.app` · iOS bundle ID: `com.looptimer.app`
-- Android App ID (AdMob, hiện đang là demo): `ca-app-pub-3940256099942544~3347511713`
-- iOS App ID (AdMob, hiện đang là demo): `ca-app-pub-3940256099942544~1458002511`
+- Android App ID (AdMob, **thật**): `ca-app-pub-6917313063209470~4808606529`
+- iOS App ID (AdMob, **đang là demo/test**): `ca-app-pub-3940256099942544~1458002511` → tạo app AdMob iOS riêng khi cần
 - Privacy Policy URL: **đang là placeholder** `https://example.com/privacy` → phải thay
 - Store URL: **đang là placeholder** `https://example.com/store` → phải thay
 
 | Mảng | Trạng thái |
 |---|---|
-| Code (timer engine, notifications, widgets, ads, i18n ×12) | ✅ Hoàn thành, 278 test pass, tsc clean |
+| Code (timer engine, notifications, widgets, ads, i18n ×12) | ✅ Hoàn thành, 285 test pass, tsc clean |
 | Icon app (iOS + Android adaptive + monochrome) | ✅ Mới tạo (xem mục 2) |
-| AdMob integration (code) | ✅ Đủ 4 placement, test IDs sẵn sàng |
-| AdMob tài khoản + Unit ID thật | ❌ Chưa làm (checklist mục 4) |
-| Firebase project + config files | ❌ Chưa làm (checklist mục 5) |
-| Remote Config 8 keys trên console | ❌ Chưa push |
-| GDPR consent (UMP) | ❌ Chưa tích hợp (mục 6) |
+| AdMob integration (code) | ✅ Đủ 4 placement |
+| AdMob tài khoản + Unit ID thật (Android) | ✅ Đã dán banner/interstitial/rewarded (checklist mục 4) |
+| AdMob tài khoản + Unit ID thật (iOS) | ❌ Chưa làm — iOS vẫn dùng test IDs (checklist mục 4) |
+| Firebase config files (`google-services.json` + `GoogleService-Info.plist`) | ✅ Đã có ở root — cần xác nhận đúng project (mục 5.1) |
+| Remote Config 9 keys trên console | ❌ Chưa push |
+| GDPR consent (UMP) — code | ✅ Đã implement (AdsConsent: gatherConsent/CanRequestAds/NPA fallback) |
+| GDPR consent (UMP) — AdMob message | ❌ Chưa tạo message trên console (mục 6) |
 | Build Android test | ❌ Chưa |
 | Build iOS test | ❌ Chưa (cần máy Mac) |
 | Play Console / App Store Connect | ❌ Chưa tạo |
@@ -78,27 +80,11 @@ node scripts/generate-icons.mjs
 
 ⚠️ **3 mục trong `tasks.md` đánh `[x]` nhưng thực tế CHƯA tồn tại trong code** — phải sửa trước khi build:
 
-### Gap 1 — Thiếu `expo-dev-client` và `expo-build-properties` trong package.json
-```bash
-npx expo install expo-dev-client expo-build-properties
-```
-- `expo-dev-client`: cần để test ads/firebase (native modules không chạy trong Expo Go)
-- `expo-build-properties`: cần `useFrameworks: dynamic` cho @react-native-firebase trên iOS
+✅ **Gap 1 + Gap 2 đã xử lý** (code hiện tại):
+- `expo-dev-client` (`~57.0.10`) + `expo-build-properties` (`~57.0.9`) **đã có** trong package.json
+- Firebase config plugin **đã có** trong `app.json` (`@react-native-firebase/app` trỏ 2 file config) + `useFrameworks: dynamic`
 
-### Gap 2 — app.json thiếu Firebase config plugin
-Thêm vào mảng `plugins` trong `app.json` (sau khi có 2 file config, xem mục 5):
-```json
-[
-  "@react-native-firebase/app",
-  {
-    "androidGoogleServicesFile": "./google-services.json",
-    "iosGoogleServicesFile": "./GoogleService-Info.plist"
-  }
-]
-```
-> Lệnh `npx expo prebuild` sẽ fail nếu 2 file này chưa tồn tại — nên thêm plugin **sau khi** đã tải file.
-
-### Gap 3 — Privacy Policy + Store URL đang là placeholder
+### Gap 3 — Privacy Policy + Store URL đang là placeholder (CÒN)
 Trong `src/app/settings.tsx`:
 ```ts
 const PRIVACY_URL = 'https://example.com/privacy';  // ← thay bằng URL thật
@@ -127,14 +113,20 @@ const STORE_URL = 'https://example.com/store';       // ← thay bằng link sto
 - [ ] ⚠️ **Chưa cần store URL để hiện ads** — có thể đánh dấu "Not yet published". Nhưng để fill rate cao + monetize tốt thì sau khi lên store phải link URL + tạo **`app-ads.txt`** trên website dev.
 
 ### 4.3 Tạo 4 Ad Unit + dán vào code
-- [ ] Mỗi app (Android + iOS) tạo 4 ad unit: **Banner, Interstitial, Rewarded, App Open**
-- [ ] Dán ID thật vào `src/features/monetization/ads-config.ts`:
-  ```ts
-  export const REAL_UNIT_IDS: Record<AdPlatform, AdUnitIds> = {
-    android: { banner: 'ca-app-pub-XXXX/YYYY', interstitial: '...', appOpen: '...', rewarded: '...' },
-    ios:     { banner: 'ca-app-pub-XXXX/YYYY', interstitial: '...', appOpen: '...', rewarded: '...' },
-  };
-  ```
+
+✅ **Android đã dán xong** trong `src/features/monetization/ads-config.ts`:
+```ts
+REAL_UNIT_IDS.android = {
+  banner: 'ca-app-pub-6917313063209470/2118295781',
+  interstitial: 'ca-app-pub-6917313063209470/9989046949',
+  appOpen: '', // placement tắt (PLACEMENT_ENABLED.appOpen = false)
+  rewarded: 'ca-app-pub-6917313063209470/9581852835',
+};
+```
+
+**iOS còn lại (khi tạo app AdMob iOS):**
+- [ ] Tạo app iOS → bundle ID `com.looptimer.app` → tạo 4 ad unit: **Banner, Interstitial, Rewarded, App Open**
+- [ ] Dán ID thật vào `REAL_UNIT_IDS.ios` trong `src/features/monetization/ads-config.ts`
 - [ ] Bật App Open nếu muốn: `PLACEMENT_ENABLED.appOpen = true` (mặc định OFF theo quyết định product)
 - [ ] **Rebuild app** (đổi Unit ID cần build lại, không chỉ reload JS)
 
@@ -165,8 +157,8 @@ App đang tự fallback về test IDs của Google (an toàn, có watermark "Tes
 - [ ] **Add app → iOS** → bundle `com.looptimer.app` → tải **`GoogleService-Info.plist`** → đặt cạnh `app.json`
 - [ ] Thêm Firebase config plugin vào app.json (Gap 2 ở mục 3)
 
-### 5.2 Remote Config — push 8 keys
-- [ ] Firebase console → **Remote Config** → tạo 8 key với đúng giá trị mặc định:
+### 5.2 Remote Config — push 9 keys
+- [ ] Firebase console → **Remote Config** → tạo 9 key với đúng giá trị mặc định:
 
 | Key | Default |
 |---|---|
@@ -178,8 +170,11 @@ App đang tự fallback về test IDs của Google (an toàn, có watermark "Tes
 | `timer_screen_native_ad_enabled` | `false` |
 | `preset_free_limit` | `-1` |
 | `custom_sound_unlock_hours` | `24` |
+| `reminder_reserved_slots` | `10` |
 
 - [ ] Publish changes (bản đầu có thể dùng "Publish now")
+
+> Code đã có fallback defaults giống hệt (`src/platform/impl.native.ts` DEFAULT_CONFIG) — app chạy bình thường dù chưa push.
 
 > Code đã có fallback defaults giống hệt — app chạy bình thường dù chưa push.
 
@@ -191,12 +186,19 @@ App đang tự fallback về test IDs của Google (an toàn, có watermark "Tes
 
 ## 6. GDPR / EU user consent (UMP)
 
-> ⚠️ **Chưa có trong code — bắt buộc nếu serve ads cho người dùng EEA/UK/CH.**
+> ✅ **UMP đã implement trong code** — bắt buộc nếu serve ads cho người dùng EEA/UK/CH.
 
+**Trạng thái code (đã xong, xem `openspec/changes/add-monetization-observability` tasks 4.2):**
+- Dùng module **`AdsConsent` sẵn có trong `react-native-google-mobile-ads`** (không cần cài thêm)
+- `consent.gatherConsent()` chạy ở bootstrap (`use-bootstrap.ts`) — request info + hiện consent form khi cần
+- UMP gate `canRequestAds()` trước mỗi show ad (interstitial/app-open/rewarded/banner)
+- Non-personalized fallback: `resolveNonPersonalized` (`src/features/monetization/consent.ts`) → `requestNonPersonalizedAdsOnly`; ATT denied/restricted → NPA vẫn serve
+- Settings có row "Privacy options" (mở `showPrivacyOptionsForm`)
+
+**Việc con người còn lại (console AdMob):**
 - [ ] AdMob → **Privacy & messaging** → tạo message "European regulations" (TCF v2.3, 2 hoặc 3 button)
-- [ ] Tích hợp **Google User Messaging Platform (UMP) SDK** vào app (cần `@react-native-google-mobile-ads` hỗ trợ UMP hoặc cài riêng)
-- [ ] Load consent form **trước khi load ad** ở app boot
-- [ ] Code hiện tại: `canShowAppOpen` + ATT request đã có, nhưng **chưa có** UMP — cần implement trước khi release EU
+- [ ] Xác nhận message áp dụng (mặc định cho EEA/UK/CH) — form sẽ tự hiện qua `AdsConsent.gatherConsent()`
+- [ ] **Verify trên dev build:** chọn "Denied" trong UMP form → ads vẫn serve non-personalized (không fail)
 
 ---
 
@@ -276,7 +278,7 @@ npx eas build --platform android --profile production
 ### 9.5 Compliance bắt buộc
 - [ ] **Data safety form** (Play Console → App content → Data safety): khai báo ad SDK thu thập device ID, analytics, v.v.
 - [ ] **Content rating** — hoàn thành bảng hỏi IARC (app không có nội dung nhạy cảm → rate thấp, ~Everyone)
-- [ ] **Target API level:** từ **31/08/2026** tất cả app mới/update phải target **Android 16 (API 36)** — SDK 57 mặc định đã target API mới nhất, xác nhận trong `app.json`/build.properties
+- [ ] **Target API level:** từ **31/08/2026** tất cả app mới/update phải target **Android 16 (API 36)**. ✅ Đã nâng `targetSdkVersion: 36` + `compileSdkVersion: 36` trong `app.json` (`expo-build-properties`) — xác nhận build OK trên EAS
 - [ ] **App access:** khai báo app không yêu cầu login
 - [ ] **Ads declaration:** khai báo có chứa ads (bắt buộc)
 - [ ] **Government apps:** không áp dụng
@@ -343,13 +345,14 @@ npx eas build --platform ios --profile production
 > Mọi thứ dưới đây đều **không thể tự động hoá** — cần tài khoản, giấy tờ, tiền, thiết bị thật.
 
 ### 🔴 Bắt buộc trước khi build
-- [ ] **1.** Cài `expo-dev-client` + `expo-build-properties` (Gap 1 — mình không tự cài vì là dependency thay đổi)
-- [ ] **2.** Tạo AdMob account → 2 app (Android/iOS) → dán App ID vào `app.json` (mục 4.2)
-- [ ] **3.** Tạo 4 ad unit/1 platform → dán ID thật vào `ads-config.ts` (mục 4.3)
-- [ ] **4.** Tạo Firebase project → tải `google-services.json` + `GoogleService-Info.plist` → thêm plugin (mục 5.1)
-- [ ] **5.** Push 8 Remote Config keys (mục 5.2)
+- [ ] **1.** ✅ Đã xong: `expo-dev-client` + `expo-build-properties` đã trong package.json
+- [ ] **2.** ✅ Android đã xong (App ID thật trong `app.json`); iOS còn chờ tạo app AdMob riêng (mục 4.2)
+- [ ] **3.** ✅ Android đã dán banner/interstitial/rewarded vào `ads-config.ts`; iOS còn lại (mục 4.3)
+- [ ] **4.** Firebase files đã có ở root — xác nhận đúng project `looptimer` + plugin trong app.json (mục 5.1)
+- [ ] **5.** Push **9** Remote Config keys (mục 5.2)
 - [ ] **6.** Thay Privacy Policy + Store URL placeholder trong `settings.tsx` (Gap 3)
-- [ ] **7.** Tích hợp UMP consent nếu phục vụ EU (mục 6)
+- [ ] **7.** UMP code đã xong — chỉ cần tạo message trên AdMob Privacy & messaging nếu phục vụ EU (mục 6)
+- [ ] **7b.** ✅ Đã xong: `targetSdkVersion: 36` + `compileSdkVersion: 36` trong `app.json` (deadline Play 31/08/2026)
 
 ### 🟠 Trước khi lên store
 - [ ] **8.** Đăng ký Google Play developer ($25) + Apple Developer ($99/năm)
@@ -372,7 +375,8 @@ npx eas build --platform ios --profile production
 |---|---|
 | Không thấy banner trên Home | Đang chạy **web** (web luôn no-op) hoặc **Expo Go** (native SDK không có). Phải chạy dev build (`expo run:android`) |
 | Ad không hiện, không crash | Đúng hành vi spec: load fail → skip. Kiểm tra mạng, unit ID, hoặc xem log `ad_shown shown:false` |
-| "Test Ad" watermark | Đang dùng test IDs — chưa dán `REAL_UNIT_IDS`. Không phải lỗi |
+| "Test Ad" watermark (Android) | Đang chạy build cũ hoặc Expo Go — build lại với real IDs. Nếu vẫn hiện: kiểm tra `REAL_UNIT_IDS` (không phải lỗi app) |
+| "Test Ad" watermark (iOS) | Đúng — iOS chưa dán real IDs, đang fallback test IDs. Không phải lỗi |
 | `Unauthorized request` trên web preview | Lỗi CORS của proxy Cloud Shell, không phải lỗi app |
 | Firebase init lỗi khi build | Chưa có `google-services.json`/`GoogleService-Info.plist` hoặc chưa thêm config plugin |
 | Build iOS fail trên Linux | Không build iOS được ngoài macOS. Dùng EAS cloud build + `eas submit` |

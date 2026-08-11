@@ -101,6 +101,7 @@ export const ko = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': '사운드 팩',
   'settings.customSound': '커스텀 사운드',
+  'settings.privacyOptions': '개인정보 옵션',
   'settings.customSoundLocked': '광고 시청으로 24시간 잠금 해제',
   'settings.customSoundUnlocked': '잠금 해제됨 · {{time}} 남음',
   'reward.unlockOk': '커스텀 사운드가 잠금 해제되었습니다!',

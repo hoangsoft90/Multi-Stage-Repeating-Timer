@@ -109,6 +109,31 @@ export interface AttService {
   requestTrackingPermission(): Promise<'authorized' | 'denied' | 'restricted' | 'undetermined'>;
 }
 
+export type ConsentStatus = 'unknown' | 'required' | 'not_required' | 'obtained';
+
+export interface ConsentService {
+  /**
+   * Run the Google UMP consent flow (request info + show consent form when
+   * required). No-op on web / Expo Go (no ads SDK). Returns whether the app
+   * is allowed to request ads.
+   */
+  gatherConsent(): Promise<boolean>;
+  /** Current UMP consent status (AdsConsentStatus mapping). */
+  getConsentStatus(): Promise<ConsentStatus>;
+  /**
+   * True when the Mobile Ads SDK may request ads (UMP gate: consent obtained
+   * or not required). False while consent is required but not yet given.
+   */
+  canRequestAds(): Promise<boolean>;
+  /**
+   * True when the NEXT ad request must be non-personalized-only (ATT
+   * denied/restricted, or the user declined personalized ads in UMP).
+   */
+  shouldUseNonPersonalized(): Promise<boolean>;
+  /** Show the UMP privacy options form (GDPR) — returns success. */
+  showPrivacyOptionsForm(): Promise<boolean>;
+}
+
 export interface SpeechService {
   /** Speak a short phrase (stage names, countdown warnings). No-op when off. */
   speak(text: string): Promise<void>;

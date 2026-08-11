@@ -1,6 +1,6 @@
 ## Purpose
 
-Capability `policy` định nghĩa các yêu cầu tuân thủ store/quảng cáo từ Day 1: Privacy Policy URL + consent, luồng ATT (App Tracking Transparency) đúng thời điểm sau value-moment đầu tiên, fallback non-personalized ads khi user deny, và cấu hình SDK Google Mobile Ads đúng chuẩn.
+Capability `policy` định nghĩa các yêu cầu tuân thủ store/quảng cáo từ Day 1: Privacy Policy URL + consent (Google UMP), luồng ATT (App Tracking Transparency) đúng thời điểm sau value-moment đầu tiên, fallback non-personalized ads khi user deny/từ chối, và cấu hình SDK Google Mobile Ads đúng chuẩn.
 
 ## ADDED Requirements
 
@@ -22,11 +22,11 @@ Trên iOS, hệ thống SHALL xin ATT gắn với value-moment đầu tiên: `re
 - **WHEN** app cold-start lần đầu tiên (chưa start timer nào)
 - **THEN** hệ thống KHÔNG hiện prompt ATT
 
-### Requirement: Non-personalized ads fallback khi Denied/Restricted (CHƯA IMPLEMENT — defer)
-Khi user Denied/Restricted ATT, hệ thống SHALL cấu hình Google Mobile Ads dùng **non-personalized ads** (requestConfiguration), ads vẫn serve bình thường (chỉ giảm eCPM) — KHÔNG được để ads fail hoàn toàn. **Trạng thái code hiện tại: chưa implement** (`setRequestConfiguration` chưa được gọi; ads mặc định personalized) — ghi rõ là work còn lại (tasks 4.2) trước khi release.
+### Requirement: Non-personalized ads fallback khi Denied/Restricted
+Khi user Denied/Restricted ATT (hoặc từ chối personalized ads trong UMP consent), hệ thống SHALL yêu cầu Google Mobile Ads dùng **non-personalized ads** (`requestNonPersonalizedAdsOnly: true` trên từng ad request — interstitial/app-open/rewarded qua `createForAdRequest(unitId, { requestNonPersonalizedAdsOnly })`, banner qua `requestOptions`), ads vẫn serve bình thường (chỉ giảm eCPM) — KHÔNG được để ads fail hoàn toàn. Quyết định NPA qua helper thuần `resolveNonPersonalized` (`src/features/monetization/consent.ts`): consent jurisdiction (UMP obtained) → theo user choice; ngoài jurisdiction → theo ATT status.
 
-#### Scenario: ATT Denied (chờ implement)
-- **WHEN** user deny ATT (sau khi implement fallback)
+#### Scenario: ATT Denied
+- **WHEN** user deny ATT và app không thuộc khu vực yêu cầu consent
 - **THEN** ads vẫn được phục vụ dạng non-personalized, không lỗi show ad
 
 ### Requirement: Cấu hình SDK Google Mobile Ads
@@ -36,9 +36,9 @@ Hệ thống SHALL khai App ID Google Mobile Ads trong AndroidManifest và Info.
 - **WHEN** app khởi động
 - **THEN** Mobile Ads SDK được khởi tạo trước khi bất kỳ ad nào được load
 
-### Requirement: Consent / UMP (CHƯA IMPLEMENT — defer)
-Hệ thống SHALL có cơ chế xử lý consent theo yêu cầu GDPR/CCPA (Google UMP) khi SDK yêu cầu; khi user không đồng ý consent, ads SHALL fallback về non-personalized và không vi phạm chính sách. **Trạng thái code hiện tại: chưa tích hợp UMP SDK** (không có trong dependencies) — bắt buộc bổ sung trước khi phát hành tại thị trường EEA/UK/CH (xem guide xuất bản).
+### Requirement: Consent / UMP
+Hệ thống SHALL xử lý consent theo yêu cầu GDPR/CCPA qua **Google UMP** (module `AdsConsent` sẵn có trong react-native-google-mobile-ads — không cần dependency riêng): `gatherConsent()` chạy ở bootstrap (request info + hiện consent form khi cần, no-op web/Expo Go), `canRequestAds()` gate trước mỗi lần show ad, `showPrivacyOptionsForm()` từ Settings (row "Privacy options"). Khi user không đồng ý personalized, hệ thống SHALL fallback non-personalized ads (`resolveNonPersonalized`) và không hiển thị ad vi phạm.
 
-#### Scenario: User không đồng ý consent (chờ implement)
-- **WHEN** (sau khi tích hợp UMP) user không đồng ý consent ở khu vực yêu cầu
+#### Scenario: User không đồng ý consent
+- **WHEN** user không đồng ý personalized ads trong UMP form ở khu vực yêu cầu
 - **THEN** hệ thống fallback non-personalized ads và không hiển thị ad vi phạm

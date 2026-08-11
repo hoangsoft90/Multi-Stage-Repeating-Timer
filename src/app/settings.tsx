@@ -20,7 +20,7 @@ import { createGoalId, weekKey } from '@/features/goals/weekly-goals';
 import { usePresetsStore } from '@/features/presets/presets-store';
 import { formatUnlockRemaining, getUnlockExpiry, watchAdForUnlock } from '@/features/monetization/rewarded-unlock';
 import { useTheme } from '@/hooks/use-theme';
-import { adManager, notifications, remoteConfig, scheduler } from '@/platform';
+import { adManager, consent, notifications, remoteConfig, scheduler } from '@/platform';
 import { BrandGradient, Radius } from '@/constants/theme';
 import { LANGUAGE_OPTIONS } from '@/i18n';
 import type { LanguageSetting } from '@/core/storage/repos';
@@ -343,8 +343,14 @@ export default function SettingsScreen() {
                     ? t('settings.customSoundUnlocked', { time: formatUnlockRemaining(unlockExpiry) })
                     : t('settings.customSoundLocked')
                 }
-                last
                 onPress={unlockExpiry ? undefined : () => void onWatchAd()}
+              />
+              {/* UMP privacy options (GDPR/CCPA) — spec: policy */}
+              <Row
+                icon="shield-half-outline"
+                label={t('settings.privacyOptions')}
+                last
+                onPress={() => void consent.showPrivacyOptionsForm()}
               />
             </AppCard>
           </View>

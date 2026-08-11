@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 import { useSettingsStore } from '@/features/settings/settings-store';
 import { usePresetsStore } from '@/features/presets/presets-store';
 import { useTimerStore } from '@/features/timer/timer-store';
-import { audio, observability } from '@/platform';
+import { audio, consent, observability } from '@/platform';
 
 let booted = false;
 
@@ -34,6 +34,9 @@ export function useBootstrap(): boolean {
       // FeedbackCoordinator in the root layout — no per-settings effect here.
       void audio.preload();
       void observability.init();
+      // Google UMP consent (GDPR/CCPA) — no-op on web/Expo Go; the consent
+      // form (when required) is shown here, before any ad can be requested.
+      void consent.gatherConsent();
     })();
   }, [loadSettings, loadPresets, initFromStorage]);
 

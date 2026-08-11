@@ -101,6 +101,7 @@ export const zhHans = {
   // ---- sound packs / rewarded ----
   'settings.soundPacksSection': '声音包',
   'settings.customSound': '自定义声音',
+  'settings.privacyOptions': '隐私选项',
   'settings.customSoundLocked': '观看广告解锁24小时',
   'settings.customSoundUnlocked': '已解锁 · 剩余{{time}}',
   'reward.unlockOk': '自定义声音已解锁！',
