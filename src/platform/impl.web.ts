@@ -21,6 +21,7 @@ import {
   WidgetBridge,
 } from './types';
 import { SOUND_SOURCES } from '../features/sounds/sound-pack';
+import { getUserSound } from '../features/sounds/user-sounds-store';
 import i18n from '../i18n';
 
 // ----------------------------------------------------------------- Scheduler
@@ -97,7 +98,9 @@ class WebAudioService implements AudioService {
   async play(soundId: string): Promise<void> {
     if (!this.enabled) return;
     try {
-      const src = this.sources[soundId];
+      // Bundled sounds use the static source map; user-imported sounds play
+      // from their file uri (spec: custom sounds).
+      const src = this.sources[soundId] ?? getUserSound(soundId)?.uri;
       if (!src) return;
       const el = this.cache.get(soundId) ?? new Audio(src);
       el.currentTime = 0;

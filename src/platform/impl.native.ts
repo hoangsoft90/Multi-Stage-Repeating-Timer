@@ -40,6 +40,7 @@ import {
 import { PLACEMENT_ENABLED, resolveUnitId } from '../features/monetization/ads-config';
 import { resolveNonPersonalized } from '../features/monetization/consent';
 import { SOUND_SOURCES } from '../features/sounds/sound-pack';
+import { getUserSound } from '../features/sounds/user-sounds-store';
 import { notifyMissedRateHigh } from '../features/background/fgs-trigger';
 import { snapshotToActivityContent, TimerActivityContent, TimerActivityLabels } from '../features/widget/activity-content';
 import { mapTimerSnapshotToWidgetData, TimerWidgetData, TimerWidgetLabels } from '../features/widget/widget-data';
@@ -254,6 +255,7 @@ class NativeNotifications implements NotificationsService {
 class NativeAudioService implements AudioService {
   private enabled = true;
   private players: Record<string, AudioPlayer | null> = {};
+  private userPlayers: Record<string, AudioPlayer | null> = {};
 
   async preload(): Promise<void> {
     try {
@@ -280,6 +282,19 @@ class NativeAudioService implements AudioService {
       if (p) {
         void p.seekTo(0);
         p.play();
+        return;
+      }
+      // User-imported sound — lazily create a player from its file uri
+      // (persisted in the app document dir, spec: custom sounds).
+      const user = getUserSound(soundId);
+      if (user?.uri) {
+        let up = this.userPlayers[soundId];
+        if (!up) {
+          up = createAudioPlayer(user.uri);
+          this.userPlayers[soundId] = up;
+        }
+        void up.seekTo(0);
+        up.play();
       }
     } catch {
       /* no-op */

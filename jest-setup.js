@@ -10,6 +10,41 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
+// expo-document-picker + expo-file-system (custom sounds import) — native
+// modules have no jest implementation. The editor screen imports
+// import-sound.ts transitively, so mock both globally (pickAudioFile is never
+// exercised in unit tests — only its imports must not throw).
+jest.mock('expo-document-picker', () => ({
+  getDocumentAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
+}));
+
+jest.mock('expo-file-system', () => {
+  class MockFile {
+    constructor(..._parts) {
+      this.uri = 'file:///mock-sound.wav';
+    }
+    copy = jest.fn().mockResolvedValue(undefined);
+    create = jest.fn();
+    get exists() {
+      return true;
+    }
+  }
+  class MockDirectory {
+    constructor(..._parts) {
+      this.uri = 'file:///mock-dir';
+    }
+    create = jest.fn();
+    get exists() {
+      return true;
+    }
+  }
+  return {
+    File: MockFile,
+    Directory: MockDirectory,
+    Paths: { document: new MockDirectory(), cache: new MockDirectory() },
+  };
+});
+
 // Deterministic device locale for i18n tests (device reports Vietnamese).
 jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'vi', languageTag: 'vi-VN', textDirection: 'ltr' }],

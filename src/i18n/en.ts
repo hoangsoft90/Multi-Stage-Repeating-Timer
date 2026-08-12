@@ -121,6 +121,18 @@ export const en = {
   'settings.customSoundUnlocked': 'Unlocked · {{time}} left',
   'reward.unlockOk': 'Custom sounds unlocked!',
   'reward.unlockFail': 'Could not unlock right now. Try again later.',
+  'sound.importSound': 'Import sound file…',
+  'sound.imported': 'Added "{{name}}"',
+  'sound.importFail': 'Could not import that file.',
+  'customSounds.title': 'My sounds',
+  'customSounds.hint': 'Import a music/ringtone file from your device to use as a stage transition sound. Imported files stay usable forever.',
+  'customSounds.add': 'Add sound file',
+  'customSounds.importing': 'Importing…',
+  'customSounds.section': 'MY SOUNDS',
+  'customSounds.empty': 'No sounds yet. Import a file to use as a stage transition sound.',
+  'customSounds.preview': 'Preview',
+  'customSounds.delete': 'Delete',
+  'customSounds.deleteConfirm': 'Delete this sound?',
 
   // ---- navigation ----
   'nav.editorTitle': 'Editor',

@@ -119,6 +119,18 @@ export const vi = {
   'settings.customSoundUnlocked': 'Đã mở khóa · còn {{time}}',
   'reward.unlockOk': 'Đã mở khóa âm thanh tùy chỉnh!',
   'reward.unlockFail': 'Không thể mở khóa ngay lúc này. Thử lại sau.',
+  'sound.importSound': 'Import file âm thanh…',
+  'sound.imported': 'Đã thêm "{{name}}"',
+  'sound.importFail': 'Không thể import file này.',
+  'customSounds.title': 'Âm thanh của tôi',
+  'customSounds.hint': 'Import file nhạc/chuông từ máy để dùng làm âm thanh chuyển stage. File đã import dùng được vĩnh viễn.',
+  'customSounds.add': 'Thêm file âm thanh',
+  'customSounds.importing': 'Đang import…',
+  'customSounds.section': 'ÂM THANH CỦA TÔI',
+  'customSounds.empty': 'Chưa có âm thanh nào. Import một file để dùng làm âm thanh chuyển stage.',
+  'customSounds.preview': 'Nghe thử',
+  'customSounds.delete': 'Xóa',
+  'customSounds.deleteConfirm': 'Xóa âm thanh này?',
 
   // ---- navigation ----
   'nav.editorTitle': 'Chỉnh sửa',

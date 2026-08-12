@@ -48,3 +48,14 @@ example
 # generated native folders
 /ios
 /android
+
+# AI tooling dirs (agent skills / context — may contain tokens, never push)
+.agent
+.agents
+.claude
+.cocoindex_code
+.codegraph
+.draft
+.edits
+.plan
+.tests

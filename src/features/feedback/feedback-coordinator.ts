@@ -7,6 +7,7 @@ import { TimerEngine } from '../../core/timer/engine';
 import { audio, haptics, notifications, observability, speech } from '../../platform';
 import { Settings } from '../../core/storage/repos';
 import { DEFAULT_SOUND_ID, resolveSoundId, soundById } from '../sounds/sound-pack';
+import { getUserSound } from '../sounds/user-sounds-store';
 import { getUnlockExpiry } from '../monetization/rewarded-unlock';
 import { t } from '../../i18n';
 
@@ -43,10 +44,17 @@ export class FeedbackCoordinator {
           // at PLAY time, not just at picker time, so an expired unlock
           // can't keep the pack permanently.
           const stage = this.engine.getSession()?.stagesSnapshot[event.index];
-          const option = soundById(stage?.soundId);
-          let playId = resolveSoundId(stage?.soundId);
-          if (option?.locked && !(await getUnlockExpiry())) {
-            playId = DEFAULT_SOUND_ID;
+          const soundId = stage?.soundId;
+          // User-imported sounds play forever (ad only gates the import —
+          // product decision), so resolve them BEFORE the bundled catalog
+          // (otherwise resolveSoundId falls back to the default chime).
+          const userSound = getUserSound(soundId);
+          let playId = userSound ? userSound.id : resolveSoundId(soundId);
+          if (!userSound) {
+            const option = soundById(soundId);
+            if (option?.locked && !(await getUnlockExpiry())) {
+              playId = DEFAULT_SOUND_ID;
+            }
           }
           await audio.play(playId);
           await haptics.vibrate('pattern-light');

@@ -20,6 +20,7 @@ import { subscribeWidgetInteraction } from '@/features/widget/widget-interaction
 import { subscribeMissedRateHigh } from '@/features/background/fgs-trigger';
 import { useRoutineStore } from '@/features/routine/routine-store';
 import { useGoalsStore } from '@/features/goals/goals-store';
+import { useUserSoundsStore } from '@/features/sounds/user-sounds-store';
 import { useTimerStore } from '@/features/timer/timer-store';
 import { useSettingsStore } from '@/features/settings/settings-store';
 import { adManager, notifications } from '@/platform';
@@ -144,6 +145,13 @@ export default function RootLayout() {
     void useGoalsStore.getState().load();
   }, [ready]);
 
+  // Load user-imported sounds once (spec: custom sounds) so the editor and
+  // settings can resolve them synchronously.
+  useEffect(() => {
+    if (!ready) return;
+    void useUserSoundsStore.getState().load();
+  }, [ready]);
+
   // Load the Ionicons font. On web @expo/vector-icons does NOT auto-register
   // its fonts (no @font-face injected) so icons would render as boxes; on
   // native this is an idempotent no-op. Icon font is cosmetic — never let a
@@ -169,6 +177,7 @@ export default function RootLayout() {
         <Stack.Screen name="routine" options={{ title: t('routine.title') }} />
         <Stack.Screen name="routine/[id]" options={{ title: t('routine.edit') }} />
         <Stack.Screen name="templates" options={{ title: t('templates.title') }} />
+        <Stack.Screen name="custom-sounds" options={{ title: t('customSounds.title') }} />
       </Stack>
       <RecoveryDialog />
       <CompletionDialog />

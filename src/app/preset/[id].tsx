@@ -17,6 +17,8 @@ import { Stepper } from '@/components/stepper';
 import { ActionMenu } from '@/components/action-menu';
 import { alertAsync, confirmAsync } from '@/components/confirm';
 import { ALL_SOUNDS, BUILTIN_SOUNDS, soundById } from '@/features/sounds/sound-pack';
+import { getUserSound, useUserSoundsStore } from '@/features/sounds/user-sounds-store';
+import { pickAudioFile } from '@/features/sounds/import-sound';
 import { getUnlockExpiry, watchAdForUnlock } from '@/features/monetization/rewarded-unlock';
 import { remoteConfig } from '@/platform';
 import { BUILTIN_TEMPLATES, usePresetsStore } from '@/features/presets/presets-store';
@@ -67,9 +69,12 @@ export default function EditorScreen() {
   const [soundMenuFor, setSoundMenuFor] = useState<number | null>(null);
   const [soundUnlocked, setSoundUnlocked] = useState(false);
   const [watchingAd, setWatchingAd] = useState(false);
+  const userSounds = useUserSoundsStore((s) => s.sounds);
 
-  // Custom sound pack state (Rewarded unlock, 24h).
+  // Custom sound pack state (Rewarded unlock, 24h) + user-imported sounds
+  // (spec: custom sounds — import gated by the unlock, playback permanent).
   useEffect(() => {
+    void useUserSoundsStore.getState().load();
     let mounted = true;
     void getUnlockExpiry().then((exp) => {
       if (mounted) setSoundUnlocked(exp !== null);
@@ -142,18 +147,43 @@ export default function EditorScreen() {
     }
   };
 
+  // Import a user audio file → persist it → auto-select it for this stage.
+  const onImportSound = async (index: number) => {
+    setSoundMenuFor(null);
+    try {
+      const imported = await pickAudioFile();
+      if (!imported) return;
+      await useUserSoundsStore.getState().add(imported);
+      pickSound(index, imported.id);
+      alertAsync(t('sound.imported', { name: imported.label }), '');
+    } catch {
+      alertAsync(t('sound.importFail'), '');
+    }
+  };
+
   const soundMenuItems =
     soundMenuFor !== null
-      ? ALL_SOUNDS.map((s) => {
-          const locked = Boolean(s.locked) && !soundUnlocked;
-          return {
-            text: locked ? `${s.label} 🔒` : s.label,
-            onPress: () => {
-              if (locked) void onLockedSoundPress(soundMenuFor, s.id);
-              else pickSound(soundMenuFor, s.id);
-            },
-          };
-        })
+      ? [
+          ...ALL_SOUNDS.map((s) => {
+            const locked = Boolean(s.locked) && !soundUnlocked;
+            return {
+              text: locked ? `${s.label} 🔒` : s.label,
+              onPress: () => {
+                if (locked) void onLockedSoundPress(soundMenuFor, s.id);
+                else pickSound(soundMenuFor, s.id);
+              },
+            };
+          }),
+          // User-imported sounds — always selectable (play forever).
+          ...userSounds.map((s) => ({
+            text: s.label,
+            onPress: () => pickSound(soundMenuFor, s.id),
+          })),
+          // Import your own file — only while the 24h unlock is live.
+          ...(soundUnlocked
+            ? [{ text: t('sound.importSound'), onPress: () => void onImportSound(soundMenuFor) }]
+            : []),
+        ]
       : [];
 
   // Templates are read-only entry points (spec: drag-drop R2) — any Save from
@@ -338,7 +368,9 @@ export default function EditorScreen() {
                   >
                     <Ionicons name="musical-notes-outline" size={14} color={theme.textSecondary} />
                     <ThemedText type="small">
-                      {soundById(stage.soundId)?.label ?? BUILTIN_SOUNDS[0].label}
+                      {soundById(stage.soundId)?.label ??
+                        getUserSound(stage.soundId)?.label ??
+                        BUILTIN_SOUNDS[0].label}
                     </ThemedText>
                     <Ionicons name="chevron-down" size={12} color={theme.textSecondary} />
                   </Pressable>

@@ -371,7 +371,9 @@ export default function SettingsScreen() {
                     ? t('settings.customSoundUnlocked', { time: formatUnlockRemaining(unlockExpiry) })
                     : t('settings.customSoundLocked')
                 }
-                onPress={unlockExpiry ? undefined : () => void onWatchAd()}
+                // Locked → watch the ad to unlock; unlocked → manage your
+                // imported sound files (spec: custom sounds).
+                onPress={unlockExpiry ? () => router.push('/custom-sounds') : () => void onWatchAd()}
               />
               {/* UMP privacy options (GDPR/CCPA) — spec: policy */}
               <Row

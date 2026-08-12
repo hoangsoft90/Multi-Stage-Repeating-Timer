@@ -25,6 +25,7 @@ import { usePresetsStore } from '../../features/presets/presets-store';
 import { useSettingsStore } from '../../features/settings/settings-store';
 import { useGoalsStore } from '../../features/goals/goals-store';
 import { weekKey } from '../../features/goals/weekly-goals';
+import { useUserSoundsStore } from '../../features/sounds/user-sounds-store';
 import { Preset } from '../../core/timer/models';
 
 const mockPush = jest.fn();
@@ -95,6 +96,7 @@ beforeEach(async () => {
   usePresetsStore.setState({ presets: [], loaded: false });
   useTimerStore.setState({ recovery: null });
   useGoalsStore.setState({ goal: null, loaded: false });
+  useUserSoundsStore.setState({ sounds: [], loaded: false });
   mockParams = { id: 'new' };
 });
 
@@ -249,6 +251,31 @@ describe('Editor — sound picker (v1.1 custom sound pack)', () => {
     await fireEvent.press(screen.getByText('Chime 2'));
     // Menu đóng, chip stage cập nhật
     expect(screen.getAllByText('Chime 2').length).toBeGreaterThan(0);
+  });
+
+  it('unlocked: sound menu hiện user-imported sounds + item import (custom sounds)', async () => {
+    // Seed qua AsyncStorage (editor load() đọc từ storage, không phải store
+    // state trực tiếp): unlock 24h + một user sound.
+    await AsyncStorage.setItem('looptimer:reward-unlock-until', String(Date.now() + 3600_000));
+    await AsyncStorage.setItem(
+      'looptimer:user-sounds',
+      JSON.stringify([{ id: 'user-1', label: 'My ringtone', uri: 'file:///mock/my.wav', addedAt: Date.now() }]),
+    );
+    await render(
+      <>
+        <DialogHost />
+        <EditorScreen />
+      </>,
+    );
+    await fireEvent.press(screen.getAllByText('Chime 1')[0]);
+    // Imported sound không bị 🔒 và item import hiện ra.
+    await waitFor(() => expect(screen.getByText('My ringtone')).toBeTruthy());
+    expect(screen.getByText('Import file âm thanh…')).toBeTruthy();
+    // Chọn user sound → chip stage cập nhật.
+    await fireEvent.press(screen.getByText('My ringtone'));
+    expect(screen.getAllByText('My ringtone').length).toBeGreaterThan(0);
+    // Cleanup unlock key.
+    await AsyncStorage.removeItem('looptimer:reward-unlock-until');
   });
 
   it('chọn sound khóa → confirm xem ad; ad fail → alert, sound không đổi', async () => {
