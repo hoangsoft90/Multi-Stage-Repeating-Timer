@@ -28,8 +28,8 @@ import { BrandGradient, Radius } from '@/constants/theme';
 import { LANGUAGE_OPTIONS } from '@/i18n';
 import type { LanguageSetting } from '@/core/storage/repos';
 
-const PRIVACY_URL = 'https://example.com/privacy';
-const STORE_URL = 'https://example.com/store';
+const PRIVACY_URL = 'https://hoangsoft90.github.io/Multi-Stage-Repeating-Timer/';
+const STORE_URL = 'https://play.google.com/store/apps/details?id=com.looptimer.app';
 
 export default function SettingsScreen() {
   const theme = useTheme();
