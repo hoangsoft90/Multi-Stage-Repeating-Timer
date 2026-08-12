@@ -12,7 +12,7 @@ App **LoopTimer** — đồng hồ interval nhiều giai đoạn (multi-stage re
 - `react-i18next` — **12 ngôn ngữ** (`src/i18n/`, `vi` là source of truth, key-parity ép kiểu compile).
 - AdMob (`react-native-google-mobile-ads` 16.3.4) + UMP consent + rewarded unlock; Firebase (Crashlytics/Analytics/Remote Config).
 - Widget Android + iOS Live Activity (`expo-widgets`).
-- Test: Jest (`jest-expo`) — 29 suites / 287 tests. Typecheck: `npx tsc --noEmit`.
+- Test: Jest (`jest-expo`) — 30 suites / 296 tests. Typecheck: `npx tsc --noEmit`.
 
 ## Cấu trúc thư mục chính
 
@@ -30,9 +30,12 @@ App **LoopTimer** — đồng hồ interval nhiều giai đoạn (multi-stage re
 - **TimerEngine thuần** (`src/core/timer/engine.ts`): timestamp tuyệt đối + `reconcile(now)` bắt kịp stage đã hết; UI chỉ render state do engine publish — spec `add-timer-engine`.
 - **Chỉ 1 session active**; mọi transition persist qua `SessionRepo`, cold start restore + reconcile → recovery dialog.
 - **Chuyển stage ở nền** bằng notification (`scheduler.scheduleAt`) + wake lock tùy setting.
-- **Ads**: real AdMob IDs + UMP consent, `TEST_ADS` flag trong `src/features/monetization/ads-config.ts`.
+- **Ads**: real AdMob IDs (Android) + UMP consent, `TEST_ADS = false` (production) trong `src/features/monetization/ads-config.ts`.
+- **Release signing**: config plugin `plugins/with-release-signing.js` — release AAB ký bằng upload keystore (`looptimer-upload.jks`, secrets GH Actions); build qua GH Actions `bundleRelease` → artifact `looptimer-aab`.
+- **Privacy Policy**: hosted trên GitHub Pages (`gh-pages`) — https://hoangsoft90.github.io/Multi-Stage-Repeating-Timer/ — nguồn `privacy-policy.html`/`.md`.
+- **Store assets**: icon 512px + feature graphic 1024×500 tự sinh bằng script pure Node (`scripts/generate-app-icon.mjs`, `scripts/generate-feature-graphic.mjs`); hướng dẫn nộp app → `chplay.md`.
 - **Theme**: `themeMode` (`system|light|dark`) áp dụng toàn app — `useTheme`/`useIsDark` (`src/hooks/use-theme.ts`), Settings có segmented control.
-- **Build APK**: GH Actions (không EAS) — mọi push vào `main` đều trigger build ~46–48 phút.
+- **Build APK/AAB**: GH Actions (không EAS) — mọi push vào `main` đều trigger build ~46–48 phút; push `gh-pages` không trigger.
 
 ## Lưu ý vận hành
 

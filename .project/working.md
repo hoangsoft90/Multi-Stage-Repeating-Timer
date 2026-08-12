@@ -4,26 +4,32 @@
 
 ## 2026-08-12
 
-- [2026-08-12] Đã push gộp `cdf7f3b..c4ece84`: feature graphic + chplay.md + privacy-policy sources. Build mới **`31618321688`** đang chạy (docs-only vẫn trigger build). Artifact đầy đủ nhất lấy từ **run `31616883001`** (code links+icon, sẽ xong trước) hoặc `31618321688` (cùng code).
-- [2026-08-12] Xong: **Feature Graphic `assets/images/feature-graphic.png` (1024×500)** — nền dark #0B0F14 + glow nhẹ, ring lớn giữa gradient blue→purple có gap countdown 60° + số "20" trắng 7-seg, 5 ring stage nhỏ (chain) cung dưới, wordmark LOOPTIMER + subtitle, badge FREE tròn gradient brand, icon clock. Script `scripts/generate-feature-graphic.mjs` (text vẽ bằng vector hình học, pure Node). **CHƯA push** (marketing asset, không cần trigger build).
-- [2026-08-12] Xong: **App Icon mới `assets/images/icon.png` (512×512)** — nền rounded dark `#0B0F14`, vòng tròn kín 5 segment (đỏ→cam→vàng→xanh→tím, đúng palette stage `stage-colors.ts`), glyph trắng "20" kiểu 7-segment ở giữa. Script `scripts/generate-app-icon.mjs` (pure Node, supersample 2048→512).
-- [2026-08-12] Đang chạy: **build mới nhất `31616477651`** — commit `a4a24b4` (Settings: privacy link thật `hoangsoft90.github.io/...` + rate link Play Store `play.google.com/store/apps/details?id=com.looptimer.app`, đã push). Trước đó run `31604528686` (AAB release signed) đã success 45m28s.
-- [2026-08-12] Xong: **host Privacy Policy** — `privacy-policy.html` (self-contained, mobile-friendly, email `haibasoftware@gmail.com`) push lên branch `gh-pages` → **live tại https://hoangsoft90.github.io/Multi-Stage-Repeating-Timer/** (GitHub Pages, HTTP 200). Push `gh-pages` không trigger build APK. Đã cập nhật `privacy-policy.md` (email thật) + `chplay.md` (URL + email). File nguồn chưa commit vào main (chờ gộp chung push code).
-- [2026-08-12] Đang chạy: **release Play Store build** — commit `4e46696` (TEST_ADS=false + AAB signing) push lên main → **GH Actions run `31604528686`** in_progress. Prebuild (config plugin `with-release-signing`) pass. Khi xong: `gh run download 31604528686 --name looptimer-aab` → `app-release.aab` → upload Play Console. Secrets đã set: `ANDROID_KEYSTORE_BASE64`/`PASSWORD`/`ALIAS` (keystore `looptimer-upload.jks`).
+### Trạng thái hiện tại
 
-- [2026-08-12] Đã push + build: commit `94547f0` (fix exact-alarm prompt) lên main → **GH Actions run `31584761847`** đang chạy (Build APK ~46–48 phút). Khi xong: `gh run download 31584761847 --name looptimer-apk` → `app-release.apk`.
-- [2026-08-12] Xong: openspec change **`fix-exact-alarm-prompt`** (4 artifacts: proposal/specs `exact-alarm-ask-once`/design/tasks) + cập nhật spec `settings-ux` (change `add-settings-ux-and-user-guidance`) với requirement "Background accuracy đánh dấu đã hỏi". `openspec validate --changes` 24/24 pass. **CHƯA commit/push** (push docs-only sẽ trigger 1 build APK thừa).
+- **Builds GH Actions (3 đang chạy):**
+  - `31616477651` — Settings links (privacy + rate) — `in_progress`
+  - `31616883001` — **icon mới + links → artifact đầy đủ nhất** (AAB signed + APK) — `in_progress`
+  - `31618321688` — docs-only (privacy sources) — `in_progress`
+  - ✅ Đã xong hôm nay: `31604528686` (AAB release signed, 45m28s) · `31584761847` (exact-alarm, 36m32s) · pages deploy
+- **Commit chưa push (local):** `fb0200c` (openspec monetization update) + `eb7bd9a` (journal) — đẩy cùng lần tới (sẽ trigger 1 build nữa)
+- **Untracked cố ý:** `AGENTS.md`, `initp.sh`
+- **Còn chờ:** AdMob app iOS (`REAL_UNIT_IDS.ios`), push 9 Remote Config keys lên console, upload AAB lên Play Console (internal testing → production)
 
-- [2026-08-12] Xong: **fix double exact-alarm prompt** — Settings > Background accuracy mở system "Alarms & reminders" nhưng không set cờ `exact-alarm-asked` → lần Start đầu (just-in-time) mở lại screen đó. Tách helper chung `openExactAlarmSettings()` trong `src/features/background/permissions.ts` (set cờ sau khi launch thành công + Platform guard), `src/app/settings.tsx` gọi helper thay vì `IntentLauncher` trực tiếp. `tsc` sạch + 51 test pass.
+### Đã xong hôm nay
 
-- [2026-08-12] Xong: **Settings UX fixes** (commit `6e603dc`, đã push) — ActionMenu cuộn được (language picker), row Privacy options gọi `gatherConsent()` trước + alert fallback, row Background accuracy luôn bấm được + refresh khi focus, chevron affordance, `canScheduleExactAlarm` fallback `false`, notification body-tap → `/timer` (live + cold start), flag `TEST_ADS=true` (test unit ID), hệ thống guide trong app (badge/tooltip/guide line, `guidesSeen`).
-- [2026-08-12] Xong: openspec change `add-settings-ux-and-user-guidance` (commit `1c7f5f8`, đã push cùng `6e603dc`).
-- [2026-08-12] Xong: **review toàn bộ codebase** → phát hiện + fix 3 bug (commit `e74911c`, đã push):
-  - `themeMode` là setting chết → `useTheme`/`useIsDark` đọc settings store, `ThemeProvider` tôn trọng, Settings dùng segmented control System/Light/Dark, `timer.tsx`/`preset/[id].tsx` chuyển sang `useIsDark`.
-  - Routine editor không tạo được khi chưa có preset → merge `BUILTIN_TEMPLATES` + presets; `schedulePresetName` resolve tên built-in.
-  - Timer kẹt 00:00 sau khi hoàn thành → redirect Home khi status `completed`.
-  - Kèm: i18n ×12 (`settings.theme*`), jest-setup mock AsyncStorage toàn cục.
-- [2026-08-12] Xong: openspec change `fix-review-issues` (commit `d8e5567`, đã push; 4/4 artifacts, validate 23/23 pass).
-- [2026-08-12] Đang chạy: **APK builds GH Actions** — run `31571782269` (code cũ, user yêu cầu để nguyên) + run `31573355542` (code fix `e74911c`). Cả 2 `in_progress`.
-- [2026-08-12] Lưu ý: mọi push vào `main` đều trigger build APK (~46–48 phút, workflow không có paths filter) → commit docs-only (`d8e5567`, `.project/*`) chưa push để tránh build thừa.
-- [2026-08-12] Lưu ý an toàn: git đang có file nhạy cảm untracked (`credentials.json`, `looptimer-upload.jks`, `apk/`, `android/`, `dist/`...) — **không `git add -A`**; cần bổ sung `.gitignore`.
+- [2026-08-12] **Release Play Store prep** (commit `4e46696`, đã push): `TEST_ADS=false` (AdMob thật — banner/interstitial/rewarded `ca-app-pub-6917313063209470/...`), config plugin `plugins/with-release-signing.js` (ký AAB bằng upload keystore, sống sót `prebuild --clean`, fallback debug keystore), GH Actions thêm `bundleRelease` + upload artifact `looptimer-aab`, 4 secrets đã set (`ANDROID_KEYSTORE_BASE64/PASSWORD/ALIAS/KEY_PASSWORD`). Run `31604528686` → success.
+- [2026-08-12] **Settings links** (commit `a4a24b4`, đã push): Privacy Policy URL thật (GitHub Pages) + Rate app → Play Store `com.looptimer.app` (`src/app/settings.tsx`).
+- [2026-08-12] **Host Privacy Policy** (branch `gh-pages`): live tại https://hoangsoft90.github.io/Multi-Stage-Repeating-Timer/ — email `haibasoftware@gmail.com`. Nguồn `privacy-policy.html`/`.md` đã commit vào main (`c4ece84`).
+- [2026-08-12] **App icon mới** (commit `cdf7f3b`, đã push): `assets/images/icon.png` 512×512 — nền `#0B0F14`, ring kín 5 segment (stage palette), glyph trắng "20" 7-seg. Script `scripts/generate-app-icon.mjs` (pure Node, supersample 2048→512).
+- [2026-08-12] **Feature graphic** (commit `ed44a33`, đã push): `assets/images/feature-graphic.png` 1024×500 — ring gradient blue→purple + gap countdown + "20", chain 5 ring stage, LOOPTIMER + subtitle, badge FREE, clock icon. Script `scripts/generate-feature-graphic.mjs` (text vẽ bằng vector hình học).
+- [2026-08-12] **`chplay.md`** (commit `4eab7db`): toàn bộ thông tin Play Console (tiếng Anh) + gắn file asset thật (icon, feature graphic, privacy URL).
+- [2026-08-12] **openspec monetization** (commit `fb0200c`, local): spec `monetization` thêm requirement "production mode — TEST_ADS=false, AdMob thật" + tasks.md section 7 Release (AAB signing, links, assets, còn 7.5–7.7). Validate 24/24.
+- [2026-08-12] openspec change `fix-exact-alarm-prompt` (4 artifacts, đã push kèm `a4a24b4`) + cập nhật spec `settings-ux` (requirement mark-asked).
+- [2026-08-12] **fix double exact-alarm prompt** (commit `94547f0`, đã push): helper `openExactAlarmSettings()` — set cờ once-per-install, Platform guard.
+- [2026-08-12] **Settings UX fixes** (commit `6e603dc`) + **3 bug fixes** `themeMode`/routine editor/timer-completed (commit `e74911c`) — đã push.
+
+### Lưu ý
+
+- Mọi push vào `main` trigger build APK (~46–48 phút, workflow không có paths filter) → docs-only push cần cân nhắc.
+- Không commit file nhạy cảm (`credentials.json`, `looptimer-upload.jks`, `apk/`, `android/`, `dist/`...) — luôn `git add` file cụ thể.
+- ⚠️ Token `ghp_...` đã lộ trong chat nhiều lần — nên revoke/rotate sau khi build xong.
