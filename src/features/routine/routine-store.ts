@@ -15,6 +15,7 @@ import {
   nextTriggerAt,
 } from './routine-schedule';
 import { usePresetsStore } from '../presets/presets-store';
+import { BUILTIN_TEMPLATES } from '../../core/templates';
 
 interface RoutineState {
   schedules: RoutineSchedule[];
@@ -36,7 +37,11 @@ const repo = new RoutineScheduleRepo();
 /** Display name for the schedule's preset (presets store or templates). */
 export function schedulePresetName(schedule: RoutineSchedule): string {
   const found = usePresetsStore.getState().presets.find((p) => p.id === schedule.presetId);
-  return found?.name ?? schedule.presetId;
+  if (found?.name) return found.name;
+  // Schedules can be bound to built-in templates (editor lists them) —
+  // resolve their display name instead of leaking a raw id like
+  // "temp_quick_session" into notifications.
+  return BUILTIN_TEMPLATES.find((t) => t.id === schedule.presetId)?.name ?? schedule.presetId;
 }
 
 export const useRoutineStore = create<RoutineState>((set, get) => {

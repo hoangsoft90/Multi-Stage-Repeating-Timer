@@ -5,7 +5,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/themed-text';
@@ -14,7 +14,7 @@ import { AppCard } from '@/components/app-card';
 import { GradientButton } from '@/components/gradient-button';
 import { ActionMenu } from '@/components/action-menu';
 import { Stepper } from '@/components/stepper';
-import { usePresetsStore } from '@/features/presets/presets-store';
+import { BUILTIN_TEMPLATES, usePresetsStore } from '@/features/presets/presets-store';
 import { useRoutineStore } from '@/features/routine/routine-store';
 import { RoutineSchedule, createScheduleId } from '@/features/routine/routine-schedule';
 import { useTheme } from '@/hooks/use-theme';
@@ -28,6 +28,16 @@ export default function RoutineEditorScreen() {
   const theme = useTheme();
 
   const presets = usePresetsStore((s) => s.presets);
+  // Built-in templates + user presets (built-ins first, deduped by id) so a
+  // new user with no saved presets can still bind a routine to a template.
+  const allPresets = useMemo(() => {
+    const seen = new Set<string>();
+    return [...BUILTIN_TEMPLATES, ...presets].filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+  }, [presets]);
   const schedules = useRoutineStore((s) => s.schedules);
   const save = useRoutineStore((s) => s.save);
   const rescheduleAll = useRoutineStore((s) => s.rescheduleAll);
@@ -48,10 +58,10 @@ export default function RoutineEditorScreen() {
       setHour(editing.hour);
       setMinute(editing.minute);
       setBefore(editing.notificationMinutesBefore[0] ?? 0);
-    } else if (presets.length > 0 && !presetId) {
-      setPresetId(presets[0].id);
+    } else if (allPresets.length > 0 && !presetId) {
+      setPresetId(allPresets[0].id);
     }
-  }, [editing, presets, presetId]);
+  }, [editing, allPresets, presetId]);
 
   const toggleDay = (d: number) => {
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort((a, b) => a - b)));
@@ -77,7 +87,7 @@ export default function RoutineEditorScreen() {
     router.back();
   };
 
-  const presetName = presets.find((p) => p.id === presetId)?.name ?? '';
+  const presetName = allPresets.find((p) => p.id === presetId)?.name ?? '';
 
   return (
     <ThemedView style={styles.container}>
@@ -153,7 +163,7 @@ export default function RoutineEditorScreen() {
       <ActionMenu
         visible={presetMenu}
         title={t('routine.preset')}
-        items={presets.map((p) => ({ text: p.name, onPress: () => setPresetId(p.id) }))}
+        items={allPresets.map((p) => ({ text: p.name, onPress: () => setPresetId(p.id) }))}
         onClose={() => setPresetMenu(false)}
       />
     </ThemedView>

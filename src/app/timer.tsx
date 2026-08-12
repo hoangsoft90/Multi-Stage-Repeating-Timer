@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Platform, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,14 +16,14 @@ import { useSettingsStore } from '@/features/settings/settings-store';
 import { useGuides } from '@/hooks/use-guides';
 import { stageColorFor } from '@/constants/stage-colors';
 import { Radius, Typography } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useIsDark, useTheme } from '@/hooks/use-theme';
 
 export default function TimerScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const theme = useTheme();
-  const scheme = useColorScheme();
-  const isDark = scheme === 'dark';
+  // Effective dark (honours the forced Light/Dark theme setting).
+  const isDark = useIsDark();
 
   const state = useTimerStore((s) => s.state);
   const pause = useTimerStore((s) => s.pause);
@@ -49,7 +49,10 @@ export default function TimerScreen() {
 
   // Nothing to show — go home.
   useEffect(() => {
-    if (status === 'idle' || status === 'stopped') {
+    // Also redirect after a completed session so the screen never sits stuck
+    // on a dead 00:00 ring once the completion dialog is dismissed (the
+    // dialog itself is rendered globally at the root layout).
+    if (status === 'idle' || status === 'stopped' || status === 'completed') {
       router.replace('/');
     }
   }, [status, router]);

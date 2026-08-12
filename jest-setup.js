@@ -3,6 +3,13 @@
 // import components using useTranslation) sees real translations.
 require('./src/i18n');
 
+// AsyncStorage mock — use-theme now reaches the settings store (→ repos →
+// AsyncStorage), so any component test that renders a themed component needs
+// the mock. Mock globally instead of duplicating it in every test file.
+jest.mock('@react-native-async-storage/async-storage', () =>
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+);
+
 // Deterministic device locale for i18n tests (device reports Vietnamese).
 jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'vi', languageTag: 'vi-VN', textDirection: 'ltr' }],

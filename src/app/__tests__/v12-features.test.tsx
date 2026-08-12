@@ -269,10 +269,11 @@ describe('Settings — Voice toggle (v1.2)', () => {
   it('hiển thị toggle Đọc voice và lưu thay đổi', async () => {
     await render(<SettingsScreen />);
     expect(screen.getByText('Đọc voice')).toBeTruthy();
-    // AppSwitch renders accessibilityRole="switch"; 5 switches exist in
-    // order: Sound, Vibration, Voice, Keep awake, System theme.
+    // AppSwitch renders accessibilityRole="switch"; 4 switches exist in
+    // order: Sound, Vibration, Voice, Keep awake. (System theme is now a
+    // segmented control, not a switch.)
     const switches = screen.getAllByRole('switch');
-    expect(switches.length).toBe(5);
+    expect(switches.length).toBe(4);
     await fireEvent.press(switches[2]);
     await waitFor(() => expect(useSettingsStore.getState().settings.voiceEnabled).toBe(false));
   });

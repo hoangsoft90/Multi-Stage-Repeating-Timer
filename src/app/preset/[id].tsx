@@ -27,8 +27,7 @@ import { useRoutineStore } from '@/features/routine/routine-store';
 import { requestNotificationPermissionOnFirstTimer } from '@/features/background/permissions';
 import { Preset, RepeatMode, Stage, createPresetId, createStageId } from '@/core/timer/models';
 import { isValidPreset, validatePreset } from '@/core/validation';
-import { useTheme } from '@/hooks/use-theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme, useIsDark } from '@/hooks/use-theme';
 import { stageAccent } from '@/constants/stage-colors';
 
 const REPEAT_OPTIONS: { labelKey: string; value: RepeatMode }[] = [
@@ -42,8 +41,8 @@ export default function EditorScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const theme = useTheme();
-  const scheme = useColorScheme();
-  const isDark = scheme === 'dark';
+  // Effective dark (honours the forced Light/Dark theme setting).
+  const isDark = useIsDark();
 
   const presets = usePresetsStore((s) => s.presets);
   const save = usePresetsStore((s) => s.save);

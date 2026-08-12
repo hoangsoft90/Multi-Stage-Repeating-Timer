@@ -12,6 +12,7 @@ import { ThemedView } from '@/components/themed-view';
 import { AppCard } from '@/components/app-card';
 import { AppSwitch } from '@/components/app-switch';
 import { ActionMenu } from '@/components/action-menu';
+import { SegmentedControl } from '@/components/segmented-control';
 import { GradientButton } from '@/components/gradient-button';
 import { alertAsync } from '@/components/confirm';
 import { useSettingsStore } from '@/features/settings/settings-store';
@@ -229,17 +230,25 @@ export default function SettingsScreen() {
                 />
               }
             />
-            <Row
-              icon="contrast-outline"
-              label={t('settings.systemTheme')}
-              last
-              control={
-                <AppSwitch
-                  value={settings.themeMode === 'system'}
-                  onValueChange={(v) => void set({ themeMode: v ? 'system' : 'light' })}
-                />
-              }
-            />
+            {/* Theme picker — 3-way (System / Light / Dark). Previously a dead
+                toggle: themeMode was stored but never applied anywhere. */}
+            <View style={styles.themeBlock}>
+              <View style={styles.themeLabelRow}>
+                <View style={[styles.iconWrap, { backgroundColor: theme.backgroundSelected }]}>
+                  <Ionicons name="contrast-outline" size={18} color={theme.textSecondary} />
+                </View>
+                <ThemedText style={styles.rowLabel}>{t('settings.theme')}</ThemedText>
+              </View>
+              <SegmentedControl
+                options={[
+                  { label: t('settings.themeSystem'), value: 'system' },
+                  { label: t('settings.themeLight'), value: 'light' },
+                  { label: t('settings.themeDark'), value: 'dark' },
+                ]}
+                value={settings.themeMode}
+                onChange={(v) => void set({ themeMode: v })}
+              />
+            </View>
           </AppCard>
         </View>
 
@@ -559,4 +568,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
   },
+  themeBlock: { paddingVertical: 8, gap: 12 },
+  themeLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
 });

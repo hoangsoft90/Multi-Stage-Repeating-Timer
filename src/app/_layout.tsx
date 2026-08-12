@@ -26,6 +26,9 @@ import { adManager, notifications } from '@/platform';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const themeMode = useSettingsStore((s) => s.settings.themeMode);
+  // Effective dark: explicit user choice wins; 'system' follows the OS.
+  const effectiveDark = themeMode === 'system' ? colorScheme === 'dark' : themeMode === 'dark';
   const { t } = useTranslation();
   const ready = useBootstrap();
   const coordinatorRef = useRef<FeedbackCoordinator | null>(null);
@@ -150,7 +153,7 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={effectiveDark ? DarkTheme : DefaultTheme}>
       <Stack
         screenOptions={{
           headerShown: true,
