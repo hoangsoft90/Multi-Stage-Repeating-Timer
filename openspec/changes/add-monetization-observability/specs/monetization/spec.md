@@ -63,3 +63,18 @@ Quảng cáo SHALL không bao giờ xuất hiện giữa stage, không hiện kh
 #### Scenario: Mở app để xem timer
 - **WHEN** user mở app để xem timer đang chạy (có session active)
 - **THEN** không có ad nào hiển thị trên màn Timer Running
+
+### Requirement: Chế độ production — TEST_ADS=false, AdMob thật
+Hệ thống SHALL có cờ `TEST_ADS` trong `ads-config.ts` để chuyển đổi giữa Google public test unit IDs và real AdMob unit IDs: khi `TEST_ADS=true`, mọi placement SHALL dùng test IDs (ad có watermark "Test Ad", không sinh doanh thu, an toàn policy khi dev); khi `TEST_ADS=false`, SHALL dùng `REAL_UNIT_IDS` — placement nào có ID thật còn trống (`''`) SHALL fallback về Google test ID của platform đó. Khi release lên Play Store, `TEST_ADS` SHALL là `false` và `REAL_UNIT_IDS.android` SHALL chứa đủ unit ID thật của app. Việc flip cờ/điền ID SHALL chỉ cần rebuild, KHÔNG đổi logic placement hay eligibility.
+
+#### Scenario: Đang trong giai đoạn dev/test
+- **WHEN** `TEST_ADS = true`
+- **THEN** mọi placement (banner/interstitial/rewarded/appOpen) dùng Google public test IDs — ad có watermark, không sinh doanh thu
+
+#### Scenario: Release Android với AdMob thật
+- **WHEN** `TEST_ADS = false` và `REAL_UNIT_IDS.android` chứa đủ banner/interstitial/rewarded thật (AdMob app `ca-app-pub-6917313063209470~4808606529`)
+- **THEN** ad hiển thị bằng unit ID thật — sinh doanh thu, không còn watermark "Test Ad"
+
+#### Scenario: Placement chưa có ID thật (iOS)
+- **WHEN** `TEST_ADS = false` nhưng `REAL_UNIT_IDS.ios.* = ''` (chưa có AdMob app iOS)
+- **THEN** placement đó dùng Google test ID (watermark, không doanh thu) — không ảnh hưởng Android đang live

@@ -38,5 +38,15 @@
 - [x] 6.1 `npx tsc --noEmit` sạch
 - [x] 6.2 Unit test: AdManager eligibility (cooldown, cap, session state), RemoteConfigService fallback, missed_transition_rate calculation
 - [ ] 6.3 Test device (dev build): ATT Denied → non-personalized ads vẫn serve; ad load fail/no-internet; Remote Config toggling giữa phiên; App Open không hiện khi có session active
-- [x] 6.4 Checklist pre-submit: Privacy Policy URL, 9 Remote Config keys trên console (gồm `reminder_reserved_slots`), ATT timing, non-personalized fallback (đã implement) — Android AdMob real IDs đã dán (App ID + banner/interstitial/rewarded); còn chờ: iOS AdMob IDs + push RC keys lên console + Privacy Policy URL thật
+- [x] 6.4 Checklist pre-submit: Android AdMob real IDs đã dán (App ID `ca-app-pub-6917313063209470~4808606529` + banner/interstitial/rewarded) và `TEST_ADS` đã flip false; Privacy Policy URL thật đã host (GitHub Pages) + link trong Settings; ATT timing, non-personalized fallback (đã implement); còn chờ: iOS AdMob IDs + push 9 RC keys lên console
 - [x] 6.5 `npx jest` toàn bộ pass; smoke web (`npx expo export --platform web`) chạy với LogObservabilityService + AdManager no-op
+
+## 7. Release (Play Store)
+
+- [x] 7.1 Flip `TEST_ADS=false` + dán `REAL_UNIT_IDS.android` thật (banner/interstitial/rewarded; app id `ca-app-pub-6917313063209470~4808606529`) — commit `4e46696` (đã push, spec: monetization requirement production mode)
+- [x] 7.2 Release build ký bằng upload keystore: config plugin `plugins/with-release-signing.js` (patch `build.gradle`, idempotent, sống sót `prebuild --clean`, fallback debug keystore khi thiếu `key.properties`) + GH Actions bước `bundleRelease` decode secret `ANDROID_KEYSTORE_BASE64` → `looptimer-upload.jks` + viết `android/key.properties`, upload artifact `looptimer-aab` — 4 secrets đã set (keystore base64/password/alias/key password)
+- [x] 7.3 Settings: Privacy Policy URL thật (GitHub Pages) + Rate app link Play Store (`com.looptimer.app`) — commit `a4a24b4`
+- [x] 7.4 Assets store: app icon 512px (5-segment ring) + feature graphic 1024×500 — commit `cdf7f3b`/`ed44a33`
+- [ ] 7.5 Tạo AdMob app iOS + dán `REAL_UNIT_IDS.ios.*` thật (hiện đang dùng test IDs)
+- [ ] 7.6 Push 9 Remote Config keys lên console
+- [ ] 7.7 Upload AAB signed lên Play Console (internal/closed testing trước, rồi promote production)
