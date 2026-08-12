@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
 import { useTranslation } from 'react-i18next';
 import * as Application from 'expo-application';
 import * as WebBrowser from 'expo-web-browser';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -16,6 +16,8 @@ import { GradientButton } from '@/components/gradient-button';
 import { alertAsync } from '@/components/confirm';
 import { useSettingsStore } from '@/features/settings/settings-store';
 import { useGoalsStore } from '@/features/goals/goals-store';
+import { useGuides } from '@/hooks/use-guides';
+import { GuideTooltip } from '@/components/guide/guide-tooltip';
 import { createGoalId, weekKey } from '@/features/goals/weekly-goals';
 import { usePresetsStore } from '@/features/presets/presets-store';
 import { formatUnlockRemaining, getUnlockExpiry, watchAdForUnlock } from '@/features/monetization/rewarded-unlock';
@@ -35,6 +37,10 @@ export default function SettingsScreen() {
   const settings = useSettingsStore((s) => s.settings);
   const set = useSettingsStore((s) => s.set);
   const [languageMenu, setLanguageMenu] = useState(false);
+
+  // One-time explainer above the permissions section (why + what to do).
+  const { isSeen, complete } = useGuides();
+  const onboardingDone = settings.onboardingDone;
 
   // Weekly goal (v1.5, spec: weekly-goals) — section form state.
   const goal = useGoalsStore((s) => s.goal);
@@ -77,24 +83,22 @@ export default function SettingsScreen() {
   };
 
   // Permission status (spec: permissions — visible state + open system settings).
+  // Refreshed on every focus so returning from the system settings screen
+  // (exact alarms / notification settings) updates the row immediately.
   const [notifStatus, setNotifStatus] = useState<'granted' | 'denied' | 'undetermined'>('undetermined');
   const [alarmExact, setAlarmExact] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
+  const refreshPermissions = useCallback(() => {
     void (async () => {
       const [status, exact] = await Promise.all([
         notifications.getPermissionStatus(),
         scheduler.canScheduleExactAlarm(),
       ]);
-      if (!mounted) return;
       setNotifStatus(status);
       setAlarmExact(exact);
     })();
-    return () => {
-      mounted = false;
-    };
   }, []);
+  useFocusEffect(refreshPermissions);
 
   const notifStatusLabel =
     notifStatus === 'granted'
@@ -132,6 +136,21 @@ export default function SettingsScreen() {
       }
     } finally {
       setWatching(false);
+    }
+  };
+
+  // UMP privacy options (GDPR/CCPA). The form only exists once consent info
+  // has been gathered — do it here (idempotent) and surface a friendly
+  // message when the form is unavailable (wrong region / still loading).
+  const onPrivacyOptions = async () => {
+    try {
+      await consent.gatherConsent();
+      const shown = await consent.showPrivacyOptionsForm();
+      if (!shown) {
+        alertAsync(t('settings.privacyUnavailable'), t('settings.privacyUnavailableBody'));
+      }
+    } catch {
+      alertAsync(t('settings.privacyUnavailable'), t('settings.privacyUnavailableBody'));
     }
   };
 
@@ -350,7 +369,7 @@ export default function SettingsScreen() {
                 icon="shield-half-outline"
                 label={t('settings.privacyOptions')}
                 last
-                onPress={() => void consent.showPrivacyOptionsForm()}
+                onPress={() => void onPrivacyOptions()}
               />
             </AppCard>
           </View>
@@ -361,6 +380,16 @@ export default function SettingsScreen() {
             <ThemedText type="smallBold" themeColor="textSecondary" style={styles.groupLabel}>
               {t('settings.permissionsSection')}
             </ThemedText>
+            {onboardingDone && !isSeen('settings-permissions') ? (
+              <GuideTooltip
+                title={t('guide.settingsTitle')}
+                body={t('guide.settingsBody')}
+                actionLabel={t('guide.gotIt')}
+                skipLabel={t('guide.skip')}
+                onDone={() => complete('settings-permissions')}
+                onSkip={() => complete('settings-permissions')}
+              />
+            ) : null}
             <AppCard style={styles.card}>
               <Row
                 icon="notifications-outline"
@@ -375,13 +404,14 @@ export default function SettingsScreen() {
                   label={t('settings.alarmStatus')}
                   value={alarmExact ? t('settings.alarmExact') : t('settings.alarmInexact')}
                   last
-                  onPress={
-                    alarmExact
-                      ? undefined
-                      : () =>
-                          void IntentLauncher.startActivityAsync(
-                            'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
-                          ).catch(() => {})
+                  // Always tappable: opens the system "Alarms & reminders"
+                  // screen. Harmless when already granted, and the only way
+                  // to grant/revoke the special access. Status refreshes on
+                  // focus (see refreshPermissions above).
+                  onPress={() =>
+                    void IntentLauncher.startActivityAsync(
+                      'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
+                    ).catch(() => {})
                   }
                 />
               )}
@@ -458,24 +488,29 @@ function Row({
   last?: boolean;
 }) {
   const theme = useTheme();
+  const tappable = !!onPress;
   return (
     <Pressable
       style={({ pressed }) => [
         styles.row,
         !last && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: theme.border },
-        pressed && onPress && styles.rowPressed,
+        pressed && tappable && styles.rowPressed,
       ]}
       onPress={onPress}
-      disabled={!onPress}
+      disabled={!tappable}
     >
       <View style={[styles.iconWrap, { backgroundColor: theme.backgroundSelected }]}>
         <Ionicons name={icon} size={18} color={theme.textSecondary} />
       </View>
       <ThemedText style={styles.rowLabel}>{label}</ThemedText>
       {value ? (
-        <ThemedText type="small" themeColor="textSecondary">{value}</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.rowValue}>
+          {value}
+        </ThemedText>
       ) : null}
       {control}
+      {/* Chevron affordance on tappable rows — makes disabled rows obvious. */}
+      {tappable && !control ? <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} /> : null}
     </Pressable>
   );
 }
@@ -494,6 +529,7 @@ const styles = StyleSheet.create({
   },
   rowPressed: { opacity: 0.6 },
   rowLabel: { flex: 1, fontSize: 15 },
+  rowValue: { flexShrink: 1, textAlign: 'right' },
   iconWrap: {
     width: 34,
     height: 34,

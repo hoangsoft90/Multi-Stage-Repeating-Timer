@@ -281,4 +281,18 @@ export const th = {
   'goals.reached': 'บรรลุเป้าหมายรายสัปดาห์! 🎉',
   'goals.notSet': 'ยังไม่ได้ตั้งเป้าหมายรายสัปดาห์',
   'goals.goalSet': 'เป้าหมาย: {{target}} เซสชัน/สัปดาห์',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'เข้าใจแล้ว',
+  'guide.skip': 'ข้าม',
+  'guide.homeStartTitle': 'วิธีเริ่ม',
+  'guide.homeStartBody': 'แตะ Start บนการ์ดใดก็ได้ LoopTimer จะเปลี่ยนเฟสให้อัตโนมัติ ไม่ต้องแตะโทรศัพท์',
+  'guide.timerTitle': 'ปุ่มควบคุม',
+  'guide.timerBody': 'หยุดชั่วคราว ข้าม หรือหยุดได้ทุกเมื่อ การออกจากหน้านี้ไม่หยุดตัวจับเวลา มันยังทำงานต่อในเบื้องหลัง',
+  'guide.settingsTitle': 'อธิบายสิทธิ์',
+  'guide.settingsBody': 'การแจ้งเตือนจะบอกเมื่อเปลี่ยนเฟส ความแม่นยำพื้นหลังช่วยให้เปลี่ยนเฟสตรงเวลาเมื่อล็อกโทรศัพท์ แตะแถวเพื่อเปิดการตั้งค่าระบบ',
+  'home.runningTitle': 'ตัวจับเวลากำลังทำงาน',
+  'home.runningOpen': 'เปิดตัวจับเวลา',
+  'settings.privacyUnavailable': 'ไม่มีตัวเลือกความเป็นส่วนตัว',
+  'settings.privacyUnavailableBody': 'แบบฟอร์มตัวเลือกความเป็นส่วนตัวไม่พร้อมใช้งานในภูมิภาคของคุณหรือกำลังโหลด โปรดลองอีกครั้งในอีกสักครู่',
 } satisfies Record<keyof typeof vi, string>;

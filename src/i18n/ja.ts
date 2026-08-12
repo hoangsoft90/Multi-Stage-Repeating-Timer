@@ -281,4 +281,18 @@ export const ja = {
   'goals.reached': '週間目標達成！🎉',
   'goals.notSet': '週間目標が未設定',
   'goals.goalSet': '目標: {{target}} セッション/週',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'わかりました',
+  'guide.skip': 'スキップ',
+  'guide.homeStartTitle': 'はじめ方',
+  'guide.homeStartBody': '任意のカードのStartをタップしてください。LoopTimerが自動でステージを切り替えます。スマホを触る必要はありません。',
+  'guide.timerTitle': 'コントロール',
+  'guide.timerBody': '一時停止・スキップ・停止はいつでも可能。この画面を離れてもタイマーは止まりません。バックグラウンドで動き続けます。',
+  'guide.settingsTitle': '権限について',
+  'guide.settingsBody': 'ステージが切り替わると通知でお知らせします。バックグラウンド精度を有効にすると、画面ロック中でも正確に切り替わります。行をタップしてシステム設定を開きます。',
+  'home.runningTitle': 'タイマー実行中',
+  'home.runningOpen': 'タイマーを開く',
+  'settings.privacyUnavailable': 'プライバシー設定を利用できません',
+  'settings.privacyUnavailableBody': 'お住まいの地域ではプライバシー設定フォームを利用できないか、読み込み中です。しばらくしてからお試しください。',
 } satisfies Record<keyof typeof vi, string>;

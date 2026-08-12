@@ -10,7 +10,10 @@ import { ThemedView } from '@/components/themed-view';
 import { confirmAsync } from '@/components/confirm';
 import { ProgressRing } from '@/components/progress-ring';
 import { StagePill } from '@/components/stage-pill';
+import { GuideTooltip } from '@/components/guide/guide-tooltip';
 import { formatMs, useTimerStore } from '@/features/timer/timer-store';
+import { useSettingsStore } from '@/features/settings/settings-store';
+import { useGuides } from '@/hooks/use-guides';
 import { stageColorFor } from '@/constants/stage-colors';
 import { Radius, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -28,6 +31,11 @@ export default function TimerScreen() {
   const skip = useTimerStore((s) => s.skip);
   const stop = useTimerStore((s) => s.stop);
   const tick = useTimerStore((s) => s.tick);
+
+  // One-time coach mark explaining the controls + background behaviour.
+  const { isSeen, complete } = useGuides();
+  const onboardingDone = useSettingsStore((s) => s.settings.onboardingDone);
+  const showControlsGuide = onboardingDone && !isSeen('timer-controls');
 
   // Reconcile + refresh on mount, then keep a 250ms render tick.
   useEffect(() => {
@@ -85,6 +93,9 @@ export default function TimerScreen() {
 
   const totalMs = (stage?.durationSeconds ?? 0) * 1000;
   const ringProgress = totalMs > 0 ? Math.max(0, Math.min(1, 1 - state.progress)) : 0;
+  // Shrink the ring while the first-run tooltip is visible so the controls
+  // + Stop button stay on screen even on small phones.
+  const ringSize = showControlsGuide ? 260 : 300;
   const roundsLabel =
     state.totalRounds > 1
       ? t('timer.round', {
@@ -146,7 +157,7 @@ export default function TimerScreen() {
         {/* progress ring */}
         <ProgressRing
           progress={ringProgress}
-          size={300}
+          size={ringSize}
           strokeWidth={14}
           gradient={stageColor.gradient}
           trackColor={theme.backgroundElement}
@@ -194,6 +205,20 @@ export default function TimerScreen() {
             <Text style={[styles.ctrlLabel, { color: theme.textSecondary }]}>{t('timer.skip')}</Text>
           </Pressable>
         </View>
+
+        {/* First-run guide: controls + "leaving does NOT stop the timer" */}
+        {showControlsGuide ? (
+          <GuideTooltip
+            title={t('guide.timerTitle')}
+            body={t('guide.timerBody')}
+            actionLabel={t('guide.gotIt')}
+            skipLabel={t('guide.skip')}
+            onDone={() => complete('timer-controls')}
+            onSkip={() => complete('timer-controls')}
+            compact
+            style={styles.guideTip}
+          />
+        ) : null}
 
         <Pressable style={styles.stopBtn} onPress={() => void onStop()} accessibilityLabel={t('timer.stop')}>
           <Ionicons name="stop" size={16} color={theme.danger} />
@@ -284,5 +309,11 @@ const styles = StyleSheet.create({
   stopLabel: {
     fontWeight: '700',
     fontSize: 16,
+  },
+  guideTip: {
+    alignSelf: 'center',
+    maxWidth: 340,
+    width: '100%',
+    marginTop: 4,
   },
 });

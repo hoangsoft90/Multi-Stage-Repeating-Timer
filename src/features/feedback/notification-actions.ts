@@ -22,6 +22,13 @@ export type ReminderActionId =
   | 'reminder_snooze_10'
   | 'reminder_dismiss';
 
+/**
+ * Normalized id for a plain notification body tap (no action button). The
+ * native listener emits this for DEFAULT_ACTION_IDENTIFIER taps — keep in
+ * sync with the private constant in src/platform/impl.native.ts.
+ */
+export const NOTIFICATION_ACTION_OPEN = 'open';
+
 const REMINDER_ACTION_IDS: readonly string[] = [
   'reminder_start',
   'reminder_snooze_5',
@@ -122,6 +129,11 @@ export async function handleNotificationAction(
   notificationId?: string,
 ): Promise<string> {
   await ensureHydrated();
+  // A plain notification tap always opens the timer screen (idle/stopped
+  // states redirect home from there).
+  if (actionId === NOTIFICATION_ACTION_OPEN) {
+    return '/timer';
+  }
   if (actionId === 'pause' || actionId === 'skip' || actionId === 'stop') {
     return applyTimerAction(actionId);
   }

@@ -41,6 +41,11 @@ export interface Settings {
   onboardingDone: boolean;
   /** True once the user dismissed the FGS "Keep timer alive" dialog. */
   fgsDialogDismissed: boolean;
+  /**
+   * Ids of in-app coach marks / tooltips the user has seen or dismissed
+   * (additive field — older settings without it read safely as []).
+   */
+  guidesSeen: string[];
   schemaVersion: number;
 }
 
@@ -53,6 +58,7 @@ export const DEFAULT_SETTINGS: Settings = {
   language: 'system',
   onboardingDone: false,
   fgsDialogDismissed: false,
+  guidesSeen: [],
   schemaVersion: 1,
 };
 

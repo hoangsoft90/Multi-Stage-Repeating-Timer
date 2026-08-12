@@ -281,4 +281,18 @@ export const ko = {
   'goals.reached': '주간 목표 달성! 🎉',
   'goals.notSet': '주간 목표 미설정',
   'goals.goalSet': '목표: 주 {{target}}세션',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': '알겠어요',
+  'guide.skip': '건너뛰기',
+  'guide.homeStartTitle': '시작하는 방법',
+  'guide.homeStartBody': '아무 카드의 Start를 탭하세요. LoopTimer가 단계를 자동으로 전환합니다. 휴대폰을 만질 필요가 없습니다.',
+  'guide.timerTitle': '컨트롤',
+  'guide.timerBody': '언제든지 일시정지·건너뛰기·중지가 가능합니다. 이 화면을 나가도 타이머는 멈추지 않고 백그라운드에서 계속됩니다.',
+  'guide.settingsTitle': '권한 설명',
+  'guide.settingsBody': "단계가 바뀌면 알림이 옵니다. '백그라운드 정확도'는 화면 잠금 중에도 정시 전환을 돕습니다. 행을 탭해 시스템 설정을 여세요.",
+  'home.runningTitle': '타이머 실행 중',
+  'home.runningOpen': '타이머 열기',
+  'settings.privacyUnavailable': '개인정보 옵션을 사용할 수 없음',
+  'settings.privacyUnavailableBody': '해당 지역에서는 개인정보 옵션 양식을 사용할 수 없거나 아직 준비 중입니다. 잠시 후 다시 시도해 주세요.',
 } satisfies Record<keyof typeof vi, string>;

@@ -281,4 +281,18 @@ export const ru = {
   'goals.reached': 'Недельная цель достигнута! 🎉',
   'goals.notSet': 'Недельная цель не задана',
   'goals.goalSet': 'Цель: {{target}} сессий/неделю',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'Понятно',
+  'guide.skip': 'Пропустить',
+  'guide.homeStartTitle': 'Как начать',
+  'guide.homeStartBody': 'Нажмите Start на любой карточке. LoopTimer переключает фазы автоматически — не нужно трогать телефон.',
+  'guide.timerTitle': 'Управление',
+  'guide.timerBody': 'Пауза, пропуск или остановка в любой момент. Выход с экрана НЕ останавливает таймер — он продолжает работать в фоне.',
+  'guide.settingsTitle': 'Разрешения: пояснения',
+  'guide.settingsBody': 'Уведомления сообщают о смене фазы. Фоновая точность сохраняет переходы вовремя, пока телефон заблокирован. Нажмите на строку, чтобы открыть системные настройки.',
+  'home.runningTitle': 'Таймер работает',
+  'home.runningOpen': 'Открыть таймер',
+  'settings.privacyUnavailable': 'Параметры конфиденциальности недоступны',
+  'settings.privacyUnavailableBody': 'Форма параметров конфиденциальности недоступна в вашем регионе или ещё загружается. Повторите попытку через минуту.',
 } satisfies Record<keyof typeof vi, string>;

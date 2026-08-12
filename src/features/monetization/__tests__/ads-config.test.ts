@@ -1,22 +1,27 @@
-import { DEMO_APP_IDS, PLACEMENT_ENABLED, resolveUnitId } from '../ads-config';
+import {
+  DEMO_APP_IDS,
+  PLACEMENT_ENABLED,
+  REAL_UNIT_IDS,
+  TEST_ADS,
+  resolveUnitId,
+} from '../ads-config';
 
 describe('ads-config', () => {
-  it('fallback: dùng platform test id khi chưa cấu hình real id (iOS + appOpen)', () => {
-    expect(resolveUnitId('ios', 'banner', 'test-banner')).toBe('test-banner');
-    expect(resolveUnitId('ios', 'interstitial', 'test-interstitial')).toBe('test-interstitial');
+  it('TEST_ADS=true (đang trong giai đoạn test) → mọi placement dùng Google test id, kể cả Android đã có real id', () => {
+    expect(TEST_ADS).toBe(true);
+    expect(resolveUnitId('android', 'banner', 'test-banner')).toBe('test-banner');
+    expect(resolveUnitId('android', 'interstitial', 'test-interstitial')).toBe('test-interstitial');
+    expect(resolveUnitId('android', 'rewarded', 'test-rewarded')).toBe('test-rewarded');
     expect(resolveUnitId('android', 'appOpen', 'test-open')).toBe('test-open');
-  });
-
-  it('ưu tiên real id khi đã cấu hình (Android live)', () => {
-    expect(resolveUnitId('android', 'banner', 'test-banner')).toBe('ca-app-pub-6917313063209470/2118295781');
-    expect(resolveUnitId('android', 'interstitial', 'test-interstitial')).toBe('ca-app-pub-6917313063209470/9989046949');
-    expect(resolveUnitId('android', 'rewarded', 'test-rewarded')).toBe('ca-app-pub-6917313063209470/9581852835');
-  });
-
-  it('iOS chưa cấu hình real id — tất cả placement fallback test id', () => {
     expect(resolveUnitId('ios', 'banner', 'test-banner')).toBe('test-banner');
-    expect(resolveUnitId('ios', 'interstitial', 'test-interstitial')).toBe('test-interstitial');
-    expect(resolveUnitId('ios', 'rewarded', 'test-rewarded')).toBe('test-rewarded');
+  });
+
+  it('real ids vẫn được cấu hình hợp lệ — khi tắt TEST_ADS chỉ cần đổi flag là live', () => {
+    expect(REAL_UNIT_IDS.android.banner).toMatch(/^ca-app-pub-\d+\/\d+$/);
+    expect(REAL_UNIT_IDS.android.interstitial).toMatch(/^ca-app-pub-\d+\/\d+$/);
+    expect(REAL_UNIT_IDS.android.rewarded).toMatch(/^ca-app-pub-\d+\/\d+$/);
+    // iOS chưa có real app — để trống (fallback test id).
+    expect(REAL_UNIT_IDS.ios.banner).toBe('');
   });
 
   it('appOpen bị tắt mặc định; banner/interstitial/rewarded bật', () => {

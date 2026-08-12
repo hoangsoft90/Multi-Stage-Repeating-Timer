@@ -111,13 +111,13 @@ describe('NativeScheduler', () => {
     await expect(scheduler.canScheduleExactAlarm()).resolves.toBe(false);
   });
 
-  it('canScheduleExactAlarm falls back to true on Android when the API is missing', async () => {
+  it('canScheduleExactAlarm reports false on Android when the API is missing (conservative default keeps the Settings row actionable)', async () => {
     const notif = Notifications as unknown as { canScheduleExactAlarms?: () => boolean };
     const prev = notif.canScheduleExactAlarms;
     notif.canScheduleExactAlarms = undefined;
     jest.replaceProperty(Platform, 'OS', 'android');
     try {
-      await expect(scheduler.canScheduleExactAlarm()).resolves.toBe(true);
+      await expect(scheduler.canScheduleExactAlarm()).resolves.toBe(false);
     } finally {
       notif.canScheduleExactAlarms = prev;
     }

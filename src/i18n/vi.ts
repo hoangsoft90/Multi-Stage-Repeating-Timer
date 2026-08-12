@@ -302,4 +302,18 @@ export const vi = {
   'goals.reached': 'Đã đạt mục tiêu tuần! 🎉',
   'goals.notSet': 'Chưa đặt mục tiêu tuần',
   'goals.goalSet': 'Mục tiêu: {{target}} phiên/tuần',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'Đã hiểu',
+  'guide.skip': 'Bỏ qua',
+  'guide.homeStartTitle': 'Bắt đầu ngay',
+  'guide.homeStartBody': 'Chạm "Start" trên bất kỳ preset nào. LoopTimer tự động chuyển giai đoạn — bạn không cần chạm vào điện thoại.',
+  'guide.timerTitle': 'Điều khiển',
+  'guide.timerBody': 'Pause, Skip hoặc Stop bất cứ lúc nào. Rời màn hình này KHÔNG dừng timer — nó vẫn chạy ở chế độ nền.',
+  'guide.settingsTitle': 'Quyền hạn — giải thích',
+  'guide.settingsBody': 'Thông báo nhắc bạn khi giai đoạn chuyển. Độ chính xác nền giúp chuyển giai đoạn đúng giờ khi điện thoại khóa. Chạm vào dòng để mở cài đặt hệ thống.',
+  'home.runningTitle': 'Timer đang chạy',
+  'home.runningOpen': 'Mở timer',
+  'settings.privacyUnavailable': 'Không có tùy chọn quyền riêng tư',
+  'settings.privacyUnavailableBody': 'Biểu mẫu tùy chọn quyền riêng tư không khả dụng ở khu vực của bạn hoặc chưa sẵn sàng. Vui lòng thử lại sau.',
 } as const;

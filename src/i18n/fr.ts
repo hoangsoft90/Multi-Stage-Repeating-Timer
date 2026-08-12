@@ -281,4 +281,18 @@ export const fr = {
   'goals.reached': 'Objectif hebdo atteint ! 🎉',
   'goals.notSet': 'Aucun objectif hebdomadaire',
   'goals.goalSet': 'Objectif : {{target}} séances/semaine',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'Compris',
+  'guide.skip': 'Ignorer',
+  'guide.homeStartTitle': 'Pour commencer',
+  'guide.homeStartBody': 'Appuyez sur Start sur une carte. LoopTimer change de phase automatiquement : inutile de toucher le téléphone.',
+  'guide.timerTitle': 'Contrôles',
+  'guide.timerBody': "Pause, saut ou arrêt à tout moment. Quitter cet écran n'arrête PAS le minuteur : il continue en arrière-plan.",
+  'guide.settingsTitle': 'Autorisations expliquées',
+  'guide.settingsBody': "Les notifications vous alertent au changement de phase. La précision en arrière-plan maintient les transitions à l'heure quand le téléphone est verrouillé. Touchez une ligne pour ouvrir les réglages système.",
+  'home.runningTitle': 'Minuteur en cours',
+  'home.runningOpen': 'Ouvrir le minuteur',
+  'settings.privacyUnavailable': 'Options de confidentialité indisponibles',
+  'settings.privacyUnavailableBody': "Le formulaire d'options de confidentialité n'est pas disponible dans votre région ou est encore en cours de chargement. Réessayez dans un instant.",
 } satisfies Record<keyof typeof vi, string>;

@@ -303,4 +303,18 @@ export const en = {
   'goals.reached': 'Weekly goal reached! 🎉',
   'goals.notSet': 'No weekly goal set',
   'goals.goalSet': 'Goal: {{target}} sessions/week',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'Got it',
+  'guide.skip': 'Skip',
+  'guide.homeStartTitle': 'How to start',
+  'guide.homeStartBody': 'Tap Start on any preset card. LoopTimer switches stages for you automatically — no need to touch the phone.',
+  'guide.timerTitle': 'Controls',
+  'guide.timerBody': 'Pause, Skip or Stop anytime. Leaving this screen does NOT stop the timer — it keeps running in the background.',
+  'guide.settingsTitle': 'Permissions, explained',
+  'guide.settingsBody': 'Notifications alert you when a stage changes. Background accuracy keeps transitions on time while the phone is locked. Tap a row to open system settings.',
+  'home.runningTitle': 'Timer running',
+  'home.runningOpen': 'Open timer',
+  'settings.privacyUnavailable': 'Privacy options unavailable',
+  'settings.privacyUnavailableBody': 'The privacy options form is not available in your region or is still loading. Please try again in a moment.',
 } satisfies Record<keyof typeof vi, string>;

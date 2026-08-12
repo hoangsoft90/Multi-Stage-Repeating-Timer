@@ -12,7 +12,7 @@ import { usePresetsStore } from '../../presets/presets-store';
 import { useRoutineStore } from '../../routine/routine-store';
 import { platformMock } from '../../../test-utils/platform-mock';
 import { notifyMissedRateHigh, resetFgsListenersForTest, subscribeMissedRateHigh } from '../../background/fgs-trigger';
-import { applyTimerAction, handleColdStartResponse } from '../notification-actions';
+import { applyTimerAction, handleColdStartResponse, handleNotificationAction } from '../notification-actions';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
@@ -83,6 +83,24 @@ describe('applyTimerAction', () => {
   it('returns / when no session is active', async () => {
     const dest = await applyTimerAction('stop');
     expect(dest).toBe('/');
+  });
+});
+
+describe('handleNotificationAction', () => {
+  it('plain notification body tap → opens the timer screen', async () => {
+    const dest = await handleNotificationAction('open');
+    expect(dest).toBe('/timer');
+  });
+
+  it('plain tap on cold start (getLastNotificationResponse) → /timer', async () => {
+    (platformMock.notifications.getLastNotificationResponse as jest.Mock).mockResolvedValue({
+      actionId: 'open',
+      notificationId: 'some_notification',
+    });
+    const nav = jest.fn();
+    await handleColdStartResponse(nav);
+    await flush();
+    expect(nav).toHaveBeenCalledWith('/timer');
   });
 });
 

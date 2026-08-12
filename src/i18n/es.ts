@@ -281,4 +281,18 @@ export const es = {
   'goals.reached': '¡Meta semanal lograda! 🎉',
   'goals.notSet': 'Sin meta semanal',
   'goals.goalSet': 'Meta: {{target}} sesiones/semana',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'Entendido',
+  'guide.skip': 'Omitir',
+  'guide.homeStartTitle': 'Cómo empezar',
+  'guide.homeStartBody': 'Toca Start en cualquier tarjeta. LoopTimer cambia de fase automáticamente: no necesitas tocar el teléfono.',
+  'guide.timerTitle': 'Controles',
+  'guide.timerBody': 'Pausa, salta o detén cuando quieras. Salir de esta pantalla NO detiene el temporizador: sigue en segundo plano.',
+  'guide.settingsTitle': 'Permisos explicados',
+  'guide.settingsBody': 'Las notificaciones te avisan al cambiar de fase. La precisión en segundo plano mantiene las transiciones a tiempo con el teléfono bloqueado. Toca una fila para abrir los ajustes del sistema.',
+  'home.runningTitle': 'Temporizador en curso',
+  'home.runningOpen': 'Abrir temporizador',
+  'settings.privacyUnavailable': 'Opciones de privacidad no disponibles',
+  'settings.privacyUnavailableBody': 'El formulario de opciones de privacidad no está disponible en tu región o aún se está cargando. Inténtalo de nuevo en un momento.',
 } satisfies Record<keyof typeof vi, string>;

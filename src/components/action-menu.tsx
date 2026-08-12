@@ -5,11 +5,18 @@
  * react-native-web, so a native-only menu was a dead-end there. This modal
  * renders tap-able actions on every platform.
  */
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { Radius } from '@/constants/theme';
+
+/**
+ * Keep long action lists (e.g. the 13-item language picker) on screen: the
+ * item list scrolls, while the title + Cancel stay pinned. 55% of the window
+ * fits ~7 items on a small phone; anything longer scrolls.
+ */
+const MAX_ITEMS_HEIGHT = Math.min(Dimensions.get('window').height * 0.55, 420);
 
 export interface ActionMenuItem {
   text: string;
@@ -39,30 +46,37 @@ export function ActionMenu({ visible, title, items, onClose }: ActionMenuProps) 
               {title}
             </ThemedText>
           ) : null}
-          {items.map((item) => (
-            <Pressable
-              key={item.text}
-              style={({ pressed }) => [
-                styles.item,
-                { backgroundColor: theme.surfaceElevated },
-                pressed && styles.itemPressed,
-              ]}
-              onPress={() => {
-                onClose();
-                item.onPress();
-              }}
-            >
-              <ThemedText
-                style={{
-                  color: item.destructive ? '#e5484d' : theme.text,
-                  fontWeight: '600',
-                  fontSize: 16,
+          <ScrollView
+            style={styles.itemsScroll}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {items.map((item) => (
+              <Pressable
+                key={item.text}
+                style={({ pressed }) => [
+                  styles.item,
+                  { backgroundColor: theme.surfaceElevated },
+                  pressed && styles.itemPressed,
+                ]}
+                onPress={() => {
+                  onClose();
+                  item.onPress();
                 }}
               >
-                {item.text}
-              </ThemedText>
-            </Pressable>
-          ))}
+                <ThemedText
+                  style={{
+                    color: item.destructive ? '#e5484d' : theme.text,
+                    fontWeight: '600',
+                    fontSize: 16,
+                  }}
+                >
+                  {item.text}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </ScrollView>
           <Pressable style={styles.item} onPress={onClose}>
             <ThemedText themeColor="textSecondary" style={{ fontWeight: '600', fontSize: 16 }}>
               {t('common.cancel')}
@@ -100,6 +114,10 @@ const styles = StyleSheet.create({
     paddingBottom: 2,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  itemsScroll: {
+    maxHeight: MAX_ITEMS_HEIGHT,
+    flexGrow: 0,
   },
   item: {
     borderRadius: Radius.md,

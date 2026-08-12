@@ -281,4 +281,18 @@ export const id = {
   'goals.reached': 'Target mingguan tercapai! 🎉',
   'goals.notSet': 'Target mingguan belum diatur',
   'goals.goalSet': 'Target: {{target}} sesi/minggu',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'Mengerti',
+  'guide.skip': 'Lewati',
+  'guide.homeStartTitle': 'Cara memulai',
+  'guide.homeStartBody': 'Ketuk Start pada kartu mana pun. LoopTimer mengganti tahap secara otomatis – tidak perlu menyentuh ponsel.',
+  'guide.timerTitle': 'Kontrol',
+  'guide.timerBody': 'Jeda, lewati, atau hentikan kapan saja. Keluar dari layar ini TIDAK menghentikan timer – timer tetap berjalan di latar belakang.',
+  'guide.settingsTitle': 'Izin, dijelaskan',
+  'guide.settingsBody': 'Notifikasi memberi tahu saat tahap berganti. Akurasi latar belakang menjaga transisi tepat waktu saat ponsel terkunci. Ketuk baris untuk membuka pengaturan sistem.',
+  'home.runningTitle': 'Timer berjalan',
+  'home.runningOpen': 'Buka timer',
+  'settings.privacyUnavailable': 'Opsi privasi tidak tersedia',
+  'settings.privacyUnavailableBody': 'Formulir opsi privasi tidak tersedia di wilayah Anda atau masih dimuat. Silakan coba lagi sebentar lagi.',
 } satisfies Record<keyof typeof vi, string>;

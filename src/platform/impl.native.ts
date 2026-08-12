@@ -133,9 +133,12 @@ class NativeScheduler implements Scheduler {
     try {
       const androidModule = Notifications as unknown as Record<string, unknown>;
       const fn = androidModule.canScheduleExactAlarms as (() => boolean) | undefined;
-      return fn ? fn() : true;
+      // expo-notifications doesn't expose a JS check for SCHEDULE_EXACT_ALARM;
+      // when it's absent, be conservative and report false (Android 13+
+      // denies exact alarms by default) so the UI keeps the row actionable.
+      return fn ? fn() : false;
     } catch {
-      return true; // best-effort; degrade handled by catch in caller
+      return false;
     }
   }
 
@@ -146,6 +149,29 @@ class NativeScheduler implements Scheduler {
 }
 
 // --------------------------------------------------------- Notifications
+
+/**
+ * Normalized action id for a plain notification body tap (no action button).
+ * The OS reports DEFAULT_ACTION_IDENTIFIER; we map it here so the shared
+ * handler can route it to the timer screen without importing expo-notifications.
+ *
+ * NOTE: must stay in sync with NOTIFICATION_ACTION_OPEN in
+ * src/features/feedback/notification-actions.ts (the shared handler matches
+ * on this string).
+ */
+const NOTIFICATION_ACTION_OPEN = 'open';
+
+/** Action ids that carry a real timer/reminder command. */
+const KNOWN_NOTIFICATION_ACTIONS = [
+  'pause',
+  'skip',
+  'stop',
+  'reminder_start',
+  'reminder_snooze_5',
+  'reminder_snooze_10',
+  'reminder_dismiss',
+];
+
 class NativeNotifications implements NotificationsService {
   async requestPermission(): Promise<boolean> {
     const { status } = await Notifications.requestPermissionsAsync();
@@ -193,15 +219,10 @@ class NativeNotifications implements NotificationsService {
     try {
       const sub = Notifications.addNotificationResponseReceivedListener((response) => {
         const actionId = response.actionIdentifier;
-        if (
-          actionId === 'pause' ||
-          actionId === 'skip' ||
-          actionId === 'stop' ||
-          actionId === 'reminder_start' ||
-          actionId === 'reminder_snooze_5' ||
-          actionId === 'reminder_snooze_10' ||
-          actionId === 'reminder_dismiss'
-        ) {
+        // A plain body tap (no action button) should open the timer screen.
+        if (actionId === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+          handler(NOTIFICATION_ACTION_OPEN, response.notification.request.identifier);
+        } else if (KNOWN_NOTIFICATION_ACTIONS.includes(actionId)) {
           handler(actionId, response.notification.request.identifier);
         }
       });
@@ -215,7 +236,11 @@ class NativeNotifications implements NotificationsService {
     try {
       const response = await Notifications.getLastNotificationResponseAsync();
       const actionId = response?.actionIdentifier ?? null;
-      if (response && actionId && actionId !== Notifications.DEFAULT_ACTION_IDENTIFIER) {
+      if (!response || !actionId) return null;
+      if (actionId === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+        return { actionId: NOTIFICATION_ACTION_OPEN, notificationId: response.notification.request.identifier };
+      }
+      if (KNOWN_NOTIFICATION_ACTIONS.includes(actionId)) {
         return { actionId, notificationId: response.notification.request.identifier };
       }
       return null;

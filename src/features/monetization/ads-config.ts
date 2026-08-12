@@ -30,6 +30,17 @@ export interface AdUnitIds {
   rewarded: string;
 }
 
+/**
+ * TEST_ADS — force Google's public TEST unit IDs everywhere, ignoring the
+ * REAL_UNIT_IDS below. Test ads render a "Test Ad" watermark and generate NO
+ * revenue, but they also never trip AdMob's policy/limit protections on a
+ * live app id while the app is still in development.
+ *
+ * Flip to false only when you're ready to serve real, revenue-generating ads.
+ * Requires a rebuild (config is baked into the JS bundle).
+ */
+export const TEST_ADS = true;
+
 /** Paste your REAL AdMob unit IDs here ('' = use Google test IDs). */
 export const REAL_UNIT_IDS: Record<AdPlatform, AdUnitIds> = {
   // Android (live): real AdMob app ca-app-pub-6917313063209470~4808606529.
@@ -53,9 +64,11 @@ export const PLACEMENT_ENABLED = {
 
 /**
  * Real unit ID when configured, otherwise the platform's Google test ID
- * (passed in by the caller, which already loaded the ads module).
+ * (passed in by the caller, which already loaded the ads module). When
+ * TEST_ADS is on, always return the Google test ID.
  */
 export function resolveUnitId(platform: AdPlatform, placement: keyof AdUnitIds, testId: string): string {
+  if (TEST_ADS) return testId;
   return REAL_UNIT_IDS[platform][placement] || testId;
 }
 

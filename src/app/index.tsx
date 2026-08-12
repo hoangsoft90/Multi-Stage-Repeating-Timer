@@ -17,6 +17,10 @@ import { confirmAsync, alertAsync } from '@/components/confirm';
 import { ImportDialog } from '@/components/import-dialog';
 import { QuickRoutineCard } from '@/components/quick-routine-card';
 import { AdBanner } from '@/components/ad-banner';
+import { GuideTooltip } from '@/components/guide/guide-tooltip';
+import { GuideBadge } from '@/components/guide/guide-badge';
+import { useGuides } from '@/hooks/use-guides';
+import { useSettingsStore } from '@/features/settings/settings-store';
 import { BUILTIN_TEMPLATES, usePresetsStore } from '@/features/presets/presets-store';
 import { encodePreset } from '@/features/presets/preset-codec';
 import { suggestPresetForDayOfWeek, suggestPresetForNow } from '@/features/stats/stats';
@@ -63,7 +67,14 @@ export default function HomeScreen() {
   const remove = usePresetsStore((s) => s.remove);
   const setFavorite = usePresetsStore((s) => s.setFavorite);
   const timerStatus = useTimerStore((s) => s.state.status);
+  const timerStageName = useTimerStore((s) => s.state.currentStage?.name);
   const schedules = useRoutineStore((s) => s.schedules);
+
+  // In-app guidance (v2): one-time tooltips + attention badges. Only after
+  // onboarding so first-launch flow stays clean.
+  const { isSeen, complete } = useGuides();
+  const onboardingDone = useSettingsStore((s) => s.settings.onboardingDone);
+  const isSessionActive = timerStatus === 'running' || timerStatus === 'paused';
 
   // Upcoming reminder (v1.3, spec: scheduled-routine 5.2) — earliest next
   // trigger among enabled schedules.
@@ -246,17 +257,39 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
           <View style={styles.headerIcons}>
-            <IconButton
-              icon="library-outline"
-              label={t('templates.title')}
-              onPress={() => router.push('/templates')}
-            />
-            <IconButton
-              icon="bar-chart-outline"
-              label={t('home.statsLabel')}
-              onPress={() => router.push('/stats')}
-            />
-            <IconButton icon="settings-outline" label={t('home.settingsLabel')} onPress={() => router.push('/settings')} />
+            <View>
+              <IconButton
+                icon="library-outline"
+                label={t('templates.title')}
+                onPress={() => {
+                  complete('badge-templates');
+                  router.push('/templates');
+                }}
+              />
+              {onboardingDone && !isSeen('badge-templates') ? <GuideBadge /> : null}
+            </View>
+            <View>
+              <IconButton
+                icon="bar-chart-outline"
+                label={t('home.statsLabel')}
+                onPress={() => {
+                  complete('badge-stats');
+                  router.push('/stats');
+                }}
+              />
+              {onboardingDone && !isSeen('badge-stats') ? <GuideBadge /> : null}
+            </View>
+            <View>
+              <IconButton
+                icon="settings-outline"
+                label={t('home.settingsLabel')}
+                onPress={() => {
+                  complete('badge-settings');
+                  router.push('/settings');
+                }}
+              />
+              {onboardingDone && !isSeen('badge-settings') ? <GuideBadge /> : null}
+            </View>
           </View>
         </View>
 
@@ -267,6 +300,40 @@ export default function HomeScreen() {
           key={favoriteRows.length + rows.length}
           ListHeaderComponent={
             <View style={{ gap: 12, marginBottom: 4 }}>
+              {/* Timer still running (background design) — jump back in */}
+              {isSessionActive ? (
+                <AppCard style={[styles.todayCard, { borderColor: '#22c55e55' }]}>
+                  <View style={styles.cardBody}>
+                    <View style={[styles.stageDot, { backgroundColor: '#22c55e' }]} />
+                    <View style={{ flex: 1, gap: 4 }}>
+                      <ThemedText type="smallBold" style={[styles.todayLabel, { color: '#22c55e' }]}>
+                        {t('home.runningTitle')}
+                      </ThemedText>
+                      <ThemedText style={{ fontWeight: '700', fontSize: 17 }}>
+                        {timerStageName ?? '…'}
+                      </ThemedText>
+                    </View>
+                    <GradientButton
+                      label={t('home.runningOpen')}
+                      onPress={() => router.push('/timer')}
+                      fullWidth={false}
+                    />
+                  </View>
+                </AppCard>
+              ) : null}
+
+              {/* First-run guide: how to start (dismissed forever on action) */}
+              {onboardingDone && !isSeen('home-start') && !isSessionActive ? (
+                <GuideTooltip
+                  title={t('guide.homeStartTitle')}
+                  body={t('guide.homeStartBody')}
+                  actionLabel={t('guide.gotIt')}
+                  skipLabel={t('guide.skip')}
+                  onDone={() => complete('home-start')}
+                  onSkip={() => complete('home-start')}
+                />
+              ) : null}
+
               {/* Quick Routine (v1.3) — zero-friction start */}
               <QuickRoutineCard onStarted={() => router.push('/timer')} />
 

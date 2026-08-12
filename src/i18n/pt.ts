@@ -281,4 +281,18 @@ export const pt = {
   'goals.reached': 'Meta semanal atingida! 🎉',
   'goals.notSet': 'Nenhuma meta semanal',
   'goals.goalSet': 'Meta: {{target}} sessões/semana',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'Entendi',
+  'guide.skip': 'Pular',
+  'guide.homeStartTitle': 'Como começar',
+  'guide.homeStartBody': 'Toque em Start em qualquer cartão. O LoopTimer alterna as fases automaticamente – não precisa tocar no celular.',
+  'guide.timerTitle': 'Controles',
+  'guide.timerBody': 'Pause, pular ou parar a qualquer momento. Sair desta tela NÃO para o cronômetro – ele continua em segundo plano.',
+  'guide.settingsTitle': 'Permissões explicadas',
+  'guide.settingsBody': 'As notificações avisam quando a fase muda. A precisão em segundo plano mantém as transições no horário com o celular bloqueado. Toque em uma linha para abrir as configurações do sistema.',
+  'home.runningTitle': 'Cronômetro em execução',
+  'home.runningOpen': 'Abrir cronômetro',
+  'settings.privacyUnavailable': 'Opções de privacidade indisponíveis',
+  'settings.privacyUnavailableBody': 'O formulário de opções de privacidade não está disponível na sua região ou ainda está carregando. Tente novamente em instantes.',
 } satisfies Record<keyof typeof vi, string>;

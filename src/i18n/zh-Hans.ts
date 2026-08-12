@@ -281,4 +281,18 @@ export const zhHans = {
   'goals.reached': '已达成每周目标！🎉',
   'goals.notSet': '尚未设置每周目标',
   'goals.goalSet': '目标：每周 {{target}} 次',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': '明白了',
+  'guide.skip': '跳过',
+  'guide.homeStartTitle': '如何开始',
+  'guide.homeStartBody': '点击任意卡片的“Start”。LoopTimer 会自动切换阶段，无需操作手机。',
+  'guide.timerTitle': '控制',
+  'guide.timerBody': '可随时暂停、跳过或停止。离开此屏幕不会停止计时器——它会在后台继续运行。',
+  'guide.settingsTitle': '权限说明',
+  'guide.settingsBody': '阶段切换时会收到通知提醒。“后台精度”可确保手机锁屏时准时切换。点按行以打开系统设置。',
+  'home.runningTitle': '计时器运行中',
+  'home.runningOpen': '打开计时器',
+  'settings.privacyUnavailable': '无法使用隐私选项',
+  'settings.privacyUnavailableBody': '隐私选项表单在您所在地区不可用或仍在加载中，请稍后再试。',
 } satisfies Record<keyof typeof vi, string>;

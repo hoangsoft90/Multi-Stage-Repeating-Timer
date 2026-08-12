@@ -281,4 +281,18 @@ export const de = {
   'goals.reached': 'Wochenziel erreicht! 🎉',
   'goals.notSet': 'Kein Wochenziel gesetzt',
   'goals.goalSet': 'Ziel: {{target}} Sessions/Woche',
+
+  // ---- v2: in-app guidance (coach marks) ----
+  'guide.gotIt': 'Verstanden',
+  'guide.skip': 'Überspringen',
+  'guide.homeStartTitle': 'So startest du',
+  'guide.homeStartBody': 'Tippe auf Start bei einer Karte. LoopTimer wechselt die Phasen automatisch – du musst das Handy nicht anfassen.',
+  'guide.timerTitle': 'Steuerung',
+  'guide.timerBody': 'Pause, Überspringen oder Stoppen jederzeit. Diese Ansicht zu verlassen stoppt den Timer NICHT – er läuft im Hintergrund weiter.',
+  'guide.settingsTitle': 'Berechtigungen erklärt',
+  'guide.settingsBody': 'Benachrichtigungen melden Phasenwechsel. Die Hintergrundgenauigkeit hält Übergänge pünktlich, während das Handy gesperrt ist. Tippe auf eine Zeile, um die Systemeinstellungen zu öffnen.',
+  'home.runningTitle': 'Timer läuft',
+  'home.runningOpen': 'Timer öffnen',
+  'settings.privacyUnavailable': 'Datenschutzoptionen nicht verfügbar',
+  'settings.privacyUnavailableBody': 'Das Formular für Datenschutzoptionen ist in deiner Region nicht verfügbar oder wird noch geladen. Bitte versuche es gleich noch einmal.',
 } satisfies Record<keyof typeof vi, string>;
