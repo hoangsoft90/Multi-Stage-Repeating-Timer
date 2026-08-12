@@ -34,6 +34,22 @@ export async function requestNotificationPermissionOnFirstTimer(): Promise<boole
 }
 
 /**
+ * Open the system "Alarms & reminders" special-access screen (Android-only
+ * action) and mark the once-per-install flag so the just-in-time prompt on
+ * first Start does NOT re-open it when the user already managed the
+ * permission manually from Settings.
+ */
+export async function openExactAlarmSettings(): Promise<void> {
+  if (Platform.OS !== 'android') return;
+  // Mark the flag only after the screen actually opened — a failed launch
+  // must not consume the once-per-install ask (the first Start would then
+  // never surface the prompt).
+  await IntentLauncher.startActivityAsync('android.settings.REQUEST_SCHEDULE_EXACT_ALARM');
+  await AsyncStorage.setItem(EXACT_ALARM_ASKED_KEY, 'true');
+  observability.logEvent('permission_requested', { type: 'exact_alarm' });
+}
+
+/**
  * Just-in-time on first Start (Android 12+). Degrades gracefully.
  *
  * expo-notifications (SDK 57) exposes NO JS check for SCHEDULE_EXACT_ALARM
@@ -49,10 +65,7 @@ export async function requestExactAlarmPermissionJustInTime(): Promise<void> {
     if (can) return;
     const asked = await AsyncStorage.getItem(EXACT_ALARM_ASKED_KEY);
     if (asked) return;
-    await AsyncStorage.setItem(EXACT_ALARM_ASKED_KEY, 'true');
-    // Open the system "Alarms & reminders" special-access screen.
-    await IntentLauncher.startActivityAsync('android.settings.REQUEST_SCHEDULE_EXACT_ALARM');
-    observability.logEvent('permission_requested', { type: 'exact_alarm' });
+    await openExactAlarmSettings();
   } catch {
     /* degrade to inexact silently */
   }

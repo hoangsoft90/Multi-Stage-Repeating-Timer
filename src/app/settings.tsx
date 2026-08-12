@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import * as IntentLauncher from 'expo-intent-launcher';
 import { useTranslation } from 'react-i18next';
 import * as Application from 'expo-application';
 import * as WebBrowser from 'expo-web-browser';
@@ -23,6 +22,7 @@ import { createGoalId, weekKey } from '@/features/goals/weekly-goals';
 import { usePresetsStore } from '@/features/presets/presets-store';
 import { formatUnlockRemaining, getUnlockExpiry, watchAdForUnlock } from '@/features/monetization/rewarded-unlock';
 import { useTheme } from '@/hooks/use-theme';
+import { openExactAlarmSettings } from '@/features/background/permissions';
 import { adManager, consent, notifications, remoteConfig, scheduler } from '@/platform';
 import { BrandGradient, Radius } from '@/constants/theme';
 import { LANGUAGE_OPTIONS } from '@/i18n';
@@ -417,13 +417,11 @@ export default function SettingsScreen() {
                   last
                   // Always tappable: opens the system "Alarms & reminders"
                   // screen. Harmless when already granted, and the only way
-                  // to grant/revoke the special access. Status refreshes on
-                  // focus (see refreshPermissions above).
-                  onPress={() =>
-                    void IntentLauncher.startActivityAsync(
-                      'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
-                    ).catch(() => {})
-                  }
+                  // to grant/revoke the special access. Marks the once-per-
+                  // install flag so the just-in-time prompt on first Start
+                  // does NOT re-open this screen (shared with permissions.ts).
+                  // Status refreshes on focus (see refreshPermissions above).
+                  onPress={() => void openExactAlarmSettings().catch(() => {})}
                 />
               )}
             </AppCard>

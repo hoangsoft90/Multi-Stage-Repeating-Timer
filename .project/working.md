@@ -4,6 +4,8 @@
 
 ## 2026-08-12
 
+- [2026-08-12] Xong: **fix double exact-alarm prompt** — Settings > Background accuracy mở system "Alarms & reminders" nhưng không set cờ `exact-alarm-asked` → lần Start đầu (just-in-time) mở lại screen đó. Tách helper chung `openExactAlarmSettings()` trong `src/features/background/permissions.ts` (set cờ sau khi launch thành công + Platform guard), `src/app/settings.tsx` gọi helper thay vì `IntentLauncher` trực tiếp. `tsc` sạch + 51 test pass. CHƯA commit.
+
 - [2026-08-12] Xong: **Settings UX fixes** (commit `6e603dc`, đã push) — ActionMenu cuộn được (language picker), row Privacy options gọi `gatherConsent()` trước + alert fallback, row Background accuracy luôn bấm được + refresh khi focus, chevron affordance, `canScheduleExactAlarm` fallback `false`, notification body-tap → `/timer` (live + cold start), flag `TEST_ADS=true` (test unit ID), hệ thống guide trong app (badge/tooltip/guide line, `guidesSeen`).
 - [2026-08-12] Xong: openspec change `add-settings-ux-and-user-guidance` (commit `1c7f5f8`, đã push cùng `6e603dc`).
 - [2026-08-12] Xong: **review toàn bộ codebase** → phát hiện + fix 3 bug (commit `e74911c`, đã push):
