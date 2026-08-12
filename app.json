@@ -53,6 +53,7 @@
           "iosGoogleServicesFile": "./GoogleService-Info.plist"
         }
       ],
+      "@react-native-firebase/crashlytics",
       [
         "react-native-google-mobile-ads",
         {
