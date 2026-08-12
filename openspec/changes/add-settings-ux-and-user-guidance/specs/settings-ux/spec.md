@@ -32,6 +32,18 @@ Trên Android, row "Background accuracy" (trạng thái `SCHEDULE_EXACT_ALARM`) 
 - **WHEN** user vào cài đặt hệ thống cấp quyền exact alarm rồi quay lại màn Settings
 - **THEN** trạng thái row cập nhật lại (không cần thoát app)
 
+### Requirement: "Background accuracy" đánh dấu đã hỏi (once per install)
+
+Khi user mở màn hình hệ thống "Alarms & reminders" từ row "Background accuracy", hệ thống SHALL đánh dấu cờ once-per-install (`looptimer:exact-alarm-asked`) để just-in-time prompt lúc Start lần đầu KHÔNG mở lại màn hình này (chống double-prompt — chi tiết change `fix-exact-alarm-prompt`).
+
+#### Scenario: Settings trước, Start sau
+- **WHEN** user bấm row "Background accuracy" rồi quay lại app và Start timer lần đầu
+- **THEN** timer chạy thẳng, không nhảy lại màn hình "Alarms & reminders"
+
+#### Scenario: Launch thất bại
+- **WHEN** mở màn hình hệ thống từ Settings thất bại
+- **THEN** cờ không được set, Start đầu vẫn còn cơ hội hỏi
+
 ### Requirement: Phát hiện exact alarm thận trọng
 
 Khi không thể phát hiện trạng thái exact alarm (API không có sẵn), hệ thống SHALL báo "chưa chắc chắn" (không khẳng định đã được cấp) để user có động cơ bấm row và tự cấp quyền — thay vì khóa row.
