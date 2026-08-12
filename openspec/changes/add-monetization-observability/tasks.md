@@ -47,6 +47,7 @@
 - [x] 7.2 Release build ký bằng upload keystore: config plugin `plugins/with-release-signing.js` (patch `build.gradle`, idempotent, sống sót `prebuild --clean`, fallback debug keystore khi thiếu `key.properties`) + GH Actions bước `bundleRelease` decode secret `ANDROID_KEYSTORE_BASE64` → `looptimer-upload.jks` + viết `android/key.properties`, upload artifact `looptimer-aab` — 4 secrets đã set (keystore base64/password/alias/key password)
 - [x] 7.3 Settings: Privacy Policy URL thật (GitHub Pages) + Rate app link Play Store (`com.looptimer.app`) — commit `a4a24b4`
 - [x] 7.4 Assets store: app icon 512px (5-segment ring) + feature graphic 1024×500 — commit `cdf7f3b`/`ed44a33`
+- [x] 7.8 Custom sound pack + user-imported sounds: `sound-pack.ts` (3 built-in + 6 locked pack), `import-sound.ts`/`user-sounds-store.ts` (DocumentPicker + persist), màn `/custom-sounds` (preview/xóa), editor sound menu gộp built-in + pack + user, row Settings "Custom sound" gate Rewarded unlock (`custom_sound_unlock_hours`) — spec: monetization requirement custom sound
 - [ ] 7.5 Tạo AdMob app iOS + dán `REAL_UNIT_IDS.ios.*` thật (hiện đang dùng test IDs)
 - [ ] 7.6 Push 9 Remote Config keys lên console
 - [ ] 7.7 Upload AAB signed lên Play Console (internal/closed testing trước, rồi promote production)

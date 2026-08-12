@@ -7,7 +7,7 @@ Capability `permissions` định nghĩa thứ tự, thời điểm và hành vi 
 ### Requirement: Thứ tự xin permission bắt buộc
 Hệ thống SHALL xin permission theo đúng thứ tự và thời điểm (cả hai đều được gọi từ `startPreset` trong timer-store — không xin lúc onboarding):
 1. `POST_NOTIFICATIONS` — xin **ngay tại lần start timer đầu tiên** (`requestNotificationPermissionOnFirstTimer`, chạy 1 lần qua cờ `looptimer:notif-asked`), kèm giải thích "Cần quyền thông báo để báo khi hết stage".
-2. `SCHEDULE_EXACT_ALARM` — xin **just-in-time** khi user bấm Start lần đầu (`requestExactAlarmPermissionJustInTime`, qua `expo-intent-launcher` tới màn Alarms & reminders; không xin lúc onboarding).
+2. `SCHEDULE_EXACT_ALARM` — xin **just-in-time** khi user bấm Start lần đầu (`requestExactAlarmPermissionJustInTime`, qua `expo-intent-launcher` tới màn Alarms & reminders; không xin lúc onboarding). JIT này SHALL tôn trọng cờ once-per-install `looptimer:exact-alarm-asked`: nếu cờ đã set (user từng mở màn "Alarms & reminders" từ Settings > Background accuracy — chi tiết change `fix-exact-alarm-prompt`) thì Start KHÔNG mở lại màn hình, degrade im lặng về inexact scheduling.
 3. `RECEIVE_BOOT_COMPLETED` — khai trong Manifest (app.json `android.permissions`), không cần runtime dialog.
 
 #### Scenario: Start timer đầu tiên

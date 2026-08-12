@@ -64,6 +64,21 @@ Quảng cáo SHALL không bao giờ xuất hiện giữa stage, không hiện kh
 - **WHEN** user mở app để xem timer đang chạy (có session active)
 - **THEN** không có ad nào hiển thị trên màn Timer Running
 
+### Requirement: Custom sound pack + user-imported sounds (Rewarded unlock gate)
+Hệ thống SHALL cung cấp catalog âm thanh stage (`src/features/sounds/sound-pack.ts`): **3 âm built-in** luôn khả dụng (chime-up/down/done) + **custom pack 6 âm khóa mặc định** (Beep/Tick/Bell/Gong/Alarm/Marimba), mở khóa tạm thời khi user xem Rewarded ad (thời hạn theo Remote Config `custom_sound_unlock_hours`, mặc định 24h — phần này cùng cơ chế với "Rewarded unlock" ở trên). Ngoài pack, hệ thống SHALL cho phép user **import file âm thanh của chính mình** (`src/features/sounds/import-sound.ts` — DocumentPicker), persist qua `UserSoundStore` (AsyncStorage), quản lý trên màn `/custom-sounds` (preview + xóa), và chọn làm stage sound trong preset editor (menu âm thanh gộp built-in + custom pack + user sounds — `ALL_SOUNDS` + `userSounds`). Import/user-sounds SHALL cũng bị gate bởi cùng Rewarded unlock: row "Custom sound" trong Settings — locked → chạy Rewarded ad; unlocked → điều hướng `/custom-sounds`.
+
+#### Scenario: Import file âm thanh
+- **WHEN** user (đã unlock) mở `/custom-sounds` và chọn file audio qua system picker
+- **THEN** file được persist, xuất hiện trong danh sách user sounds, preview được, xóa được, và chọn được làm stage sound trong preset editor
+
+#### Scenario: Chưa unlock
+- **WHEN** user chưa xem Rewarded (chưa unlock 24h) và bấm row "Custom sound" trong Settings
+- **THEN** app chạy luồng Rewarded ad; xem xong → vào `/custom-sounds`; hủy → giữ trạng thái khóa
+
+#### Scenario: Sound mặc định khi id không còn tồn tại
+- **WHEN** stage đặt soundId nhưng id không còn trong catalog (vd user sound đã bị xóa)
+- **THEN** hệ thống fallback về `chime-up` (`DEFAULT_SOUND_ID`) — không lỗi, không crash timer
+
 ### Requirement: Chế độ production — TEST_ADS=false, AdMob thật
 Hệ thống SHALL có cờ `TEST_ADS` trong `ads-config.ts` để chuyển đổi giữa Google public test unit IDs và real AdMob unit IDs: khi `TEST_ADS=true`, mọi placement SHALL dùng test IDs (ad có watermark "Test Ad", không sinh doanh thu, an toàn policy khi dev); khi `TEST_ADS=false`, SHALL dùng `REAL_UNIT_IDS` — placement nào có ID thật còn trống (`''`) SHALL fallback về Google test ID của platform đó. Khi release lên Play Store, `TEST_ADS` SHALL là `false` và `REAL_UNIT_IDS.android` SHALL chứa đủ unit ID thật của app. Việc flip cờ/điền ID SHALL chỉ cần rebuild, KHÔNG đổi logic placement hay eligibility.
 

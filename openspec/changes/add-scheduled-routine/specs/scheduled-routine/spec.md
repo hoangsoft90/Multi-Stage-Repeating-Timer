@@ -60,8 +60,12 @@ Nếu reminder đã qua giờ mà user không start (không tap Start, không sn
 - **THEN** streak không reset (vẫn theo logic: reset khi không mở app 2 ngày liên tiếp)
 
 ### Requirement: Tách ngân sách notification iOS
-Stage queue iOS SHALL không chiếm toàn bộ trần notification. Hệ thống SHALL đặt trần hiệu dụng: `effectiveMax = 64 - reminder_reserved_slots - activeScheduleCount` (Remote Config `reminder_reserved_slots`, default 10) và dùng `min(effectiveMax, max_scheduled_transitions_ios)` cho stage queue. Cảnh báo Editor (exceedsNotificationWindow) SHALL dùng trần hiệu dụng này.
+Stage queue iOS SHALL không chiếm toàn bộ trần notification. Hệ thống SHALL đặt trần hiệu dụng qua hàm `effectiveMaxStageQueue(reservedSlots, activeScheduleCount, configuredMax = 50)` = `Math.max(10, Math.min(64 - reservedSlots - activeScheduleCount, configuredMax))` — tức `effectiveMax = 64 - reminder_reserved_slots - activeScheduleCount` (Remote Config `reminder_reserved_slots`, default 10), **không thấp hơn floor 10** và không vượt `max_scheduled_transitions_ios`, và dùng trần này cho stage queue. Cảnh báo Editor (exceedsNotificationWindow) SHALL dùng trần hiệu dụng này.
 
 #### Scenario: Nhiều schedule bật
 - **WHEN** user có 5 schedule bật trên iOS
 - **THEN** stage queue tối đa = 64 - 10 - 5 = 49 (thay vì 50), cảnh báo Editor tính theo 49
+
+#### Scenario: Quá nhiều schedule không hạ dưới floor
+- **WHEN** user có 60 schedule bật trên iOS (64 - 10 - 60 < 0)
+- **THEN** trần hiệu dụng dừng ở floor 10 — không xuống dưới 0/âm
