@@ -4,6 +4,8 @@
 
 ## 2026-08-12
 
+- [2026-08-12] Đang chuẩn bị: **release Play Store** — `TEST_ADS=false` (real AdMob, ID thật Android đã cấu hình) + AAB ký keystore thật `looptimer-upload.jks` (EAS-generated, gitignored) qua config plugin `plugins/with-release-signing.js` + GH secrets (`ANDROID_KEYSTORE_BASE64`/`PASSWORD`/`ALIAS`) + step `bundleRelease` → artifact `looptimer-aab`. Plugin fallback debug keystore khi thiếu key.properties (local build không vỡ). Full jest 30 suites/296 pass, tsc sạch.
+
 - [2026-08-12] Đã push + build: commit `94547f0` (fix exact-alarm prompt) lên main → **GH Actions run `31584761847`** đang chạy (Build APK ~46–48 phút). Khi xong: `gh run download 31584761847 --name looptimer-apk` → `app-release.apk`.
 - [2026-08-12] Xong: openspec change **`fix-exact-alarm-prompt`** (4 artifacts: proposal/specs `exact-alarm-ask-once`/design/tasks) + cập nhật spec `settings-ux` (change `add-settings-ux-and-user-guidance`) với requirement "Background accuracy đánh dấu đã hỏi". `openspec validate --changes` 24/24 pass. **CHƯA commit/push** (push docs-only sẽ trigger 1 build APK thừa).
 

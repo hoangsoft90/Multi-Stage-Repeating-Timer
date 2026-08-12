@@ -39,7 +39,7 @@ export interface AdUnitIds {
  * Flip to false only when you're ready to serve real, revenue-generating ads.
  * Requires a rebuild (config is baked into the JS bundle).
  */
-export const TEST_ADS = true;
+export const TEST_ADS = false;
 
 /** Paste your REAL AdMob unit IDs here ('' = use Google test IDs). */
 export const REAL_UNIT_IDS: Record<AdPlatform, AdUnitIds> = {

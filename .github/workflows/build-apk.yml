@@ -47,6 +47,23 @@ jobs:
         working-directory: android
         run: ./gradlew assembleRelease
 
+      # Play Store AAB — signed with the REAL upload keystore (with-release-
+      # signing config plugin reads android/key.properties; the keystore itself
+      # is decoded from a GitHub secret, never committed).
+      - name: Decode upload keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/looptimer-upload.jks
+          cat > android/key.properties <<EOF
+          storeFile=looptimer-upload.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+
+      - name: Build Release AAB (Play Store)
+        working-directory: android
+        run: ./gradlew bundleRelease
+
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
@@ -54,5 +71,13 @@ jobs:
           path: |
             android/app/build/outputs/apk/debug/*.apk
             android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: looptimer-aab
+          path: android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
           retention-days: 14

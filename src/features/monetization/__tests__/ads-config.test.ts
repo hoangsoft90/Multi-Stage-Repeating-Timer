@@ -7,12 +7,14 @@ import {
 } from '../ads-config';
 
 describe('ads-config', () => {
-  it('TEST_ADS=true (đang trong giai đoạn test) → mọi placement dùng Google test id, kể cả Android đã có real id', () => {
-    expect(TEST_ADS).toBe(true);
-    expect(resolveUnitId('android', 'banner', 'test-banner')).toBe('test-banner');
-    expect(resolveUnitId('android', 'interstitial', 'test-interstitial')).toBe('test-interstitial');
-    expect(resolveUnitId('android', 'rewarded', 'test-rewarded')).toBe('test-rewarded');
+  it('TEST_ADS=false (production) → Android dùng real unit id đã cấu hình', () => {
+    expect(TEST_ADS).toBe(false);
+    expect(resolveUnitId('android', 'banner', 'test-banner')).toBe(REAL_UNIT_IDS.android.banner);
+    expect(resolveUnitId('android', 'interstitial', 'test-interstitial')).toBe(REAL_UNIT_IDS.android.interstitial);
+    expect(resolveUnitId('android', 'rewarded', 'test-rewarded')).toBe(REAL_UNIT_IDS.android.rewarded);
+    // appOpen disabled → real id trống → fallback test id (không bao giờ render).
     expect(resolveUnitId('android', 'appOpen', 'test-open')).toBe('test-open');
+    // iOS chưa có real app → fallback test id.
     expect(resolveUnitId('ios', 'banner', 'test-banner')).toBe('test-banner');
   });
 
