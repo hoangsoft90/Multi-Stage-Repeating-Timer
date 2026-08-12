@@ -31,6 +31,7 @@ import { currentStreak } from '../stats/stats';
 import { t } from '../../i18n';
 import { useSettingsStore } from '../settings/settings-store';
 import { usePresetsStore } from '../presets/presets-store';
+import { useRoutineStore } from '../routine/routine-store';
 import { BUILTIN_TEMPLATES } from '../../core/templates';
 import { requestExactAlarmPermissionJustInTime, requestNotificationPermissionOnFirstTimer } from '../background/permissions';
 
@@ -81,6 +82,16 @@ interface TimerState {
 
 const sessionRepo = new SessionRepo();
 const sessionLogRepo = new SessionLogRepo();
+
+/**
+ * Routine reminders must survive timer activity: scheduler.cancelAll() wipes
+ * EVERY scheduled notification (including routine_* ids), so re-schedule the
+ * enabled routines right after each cancel. Best-effort + no-throw.
+ */
+async function cancelAllKeepRoutines(): Promise<void> {
+  await scheduler.cancelAll();
+  await useRoutineStore.getState().rescheduleAll().catch(() => {});
+}
 
 /**
  * Fallback preset display name for the current session. The authoritative
@@ -248,7 +259,7 @@ export const useTimerStore = create<TimerState>((set, get) => {
         })();
       }
       void sessionRepo.clear();
-      void scheduler.cancelAll();
+      void cancelAllKeepRoutines();
       stopTicker();
       syncWakeLock();
       void widgetBridge.updateTimerSnapshot(null);
@@ -264,7 +275,7 @@ export const useTimerStore = create<TimerState>((set, get) => {
       flushPending();
       if (event.type === 'StageStarted') lastRemainingByEnd.clear();
       void persistSession();
-      void scheduler.cancelAll();
+      void cancelAllKeepRoutines();
       reschedule();
       syncWakeLock();
       syncWidgets();
@@ -302,7 +313,7 @@ export const useTimerStore = create<TimerState>((set, get) => {
 
       // Re-schedule notifications from the reconciled state (cold start).
       if (st.status === 'running' && st.stageEndsAt != null) {
-        void scheduler.cancelAll();
+        void cancelAllKeepRoutines();
         reschedule();
         syncWakeLock();
       }
@@ -348,7 +359,7 @@ export const useTimerStore = create<TimerState>((set, get) => {
       if (cur.status === 'running' || cur.status === 'paused') {
         engine.stop();
         await sessionRepo.clear();
-        await scheduler.cancelAll();
+        await cancelAllKeepRoutines();
       }
       lastStartedPresetName = preset.name.trim() || 'Timer';
       lastStartedRepeat = { repeatMode: preset.repeatMode, fixedCount: preset.fixedCount ?? null };
@@ -374,7 +385,7 @@ export const useTimerStore = create<TimerState>((set, get) => {
       engine.pause();
       set({ state: engine.getState() });
       stopTicker();
-      void scheduler.cancelAll();
+      void cancelAllKeepRoutines();
       syncWakeLock();
     },
 
@@ -382,7 +393,7 @@ export const useTimerStore = create<TimerState>((set, get) => {
       engine.resume();
       set({ state: engine.getState() });
       startTicker();
-      void scheduler.cancelAll();
+      void cancelAllKeepRoutines();
       reschedule();
       syncWakeLock();
     },
@@ -390,14 +401,14 @@ export const useTimerStore = create<TimerState>((set, get) => {
     skip: () => {
       engine.skip();
       set({ state: engine.getState() });
-      void scheduler.cancelAll();
+      void cancelAllKeepRoutines();
       reschedule();
     },
 
     stop: async () => {
       engine.stop();
       await sessionRepo.clear();
-      await scheduler.cancelAll();
+      await cancelAllKeepRoutines();
       set({ state: engine.getState() });
       stopTicker();
       syncWakeLock();
@@ -445,7 +456,7 @@ export const useTimerStore = create<TimerState>((set, get) => {
         // dismiss
         engine.stop();
         void sessionRepo.clear();
-        void scheduler.cancelAll();
+        void cancelAllKeepRoutines();
         set({ recovery: null, state: engine.getState() });
         stopTicker();
         syncWakeLock();

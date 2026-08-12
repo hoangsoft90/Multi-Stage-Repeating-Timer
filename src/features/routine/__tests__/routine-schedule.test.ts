@@ -104,6 +104,17 @@ describe('isMissed', () => {
     // Trước 07:50 thì chưa missed.
     expect(isMissed(s, new Date(2026, 7, 10, 7, 45).getTime())).toBe(false);
   });
+
+  it('before-window crossing midnight belongs to the previous evening (regression)', () => {
+    // 00:10 with 30' before → effective fire = 23:40 the day before. JS Date
+    // normalizes the negative fire minute to the previous day, so the
+    // reminder for the next 00:10 fires at today 23:40.
+    const s = schedule({ hour: 0, minute: 10, notificationMinutesBefore: [30] });
+    const now = new Date(2026, 7, 10, 12, 0).getTime(); // Monday noon
+    const at = nextTriggerAt(s, now);
+    // Tuesday 00:10 minus 30' → Monday 23:40 (2026-08-10 is a Monday).
+    expect(at).toBe(new Date(2026, 7, 10, 23, 40).getTime());
+  });
 });
 
 describe('snooze bounds + budget', () => {

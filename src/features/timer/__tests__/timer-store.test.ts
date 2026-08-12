@@ -10,6 +10,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTimerStore } from '../timer-store';
 import { usePresetsStore } from '../../presets/presets-store';
+import { useRoutineStore } from '../../routine/routine-store';
 import { Preset, TimerSession } from '../../../core/timer/models';
 import { SessionLogRepo } from '../../../core/storage/repos';
 import { platformMock } from '../../../test-utils/platform-mock';
@@ -336,6 +337,38 @@ describe('restore + recovery (reconcile on cold start)', () => {
     const completion = useTimerStore.getState().completion;
     expect(completion?.presetName).toBe('Restored HIIT');
     expect(completion?.streak).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('routine reminders survive timer activity (cancelAll regression)', () => {
+  it('re-schedules routine reminders after pause cancels all notifications', async () => {
+    // Seed one enabled routine so rescheduleAll has something to re-add.
+    useRoutineStore.setState({
+      schedules: [
+        {
+          id: 'r1',
+          presetId: 'p_test',
+          enabled: true,
+          daysOfWeek: [1, 2, 3, 4, 5],
+          hour: 8,
+          minute: 0,
+          notificationMinutesBefore: [0],
+          schemaVersion: 1,
+        },
+      ],
+      loaded: true,
+    });
+    const store = useTimerStore.getState();
+    await store.startPreset(makePreset());
+    platformMock.scheduler.scheduleAt.mockClear();
+    store.pause(); // triggers cancelAllKeepRoutines()
+    await flushAsync();
+    await flushAsync();
+    // The routine reminder must have been re-added (id prefix routine_).
+    const routineIds = platformMock.scheduler.scheduleAt.mock.calls
+      .map((c) => c[1] as string)
+      .filter((id) => id.startsWith('routine_'));
+    expect(routineIds.length).toBeGreaterThan(0);
   });
 });
 
