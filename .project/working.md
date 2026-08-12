@@ -4,6 +4,7 @@
 
 ## 2026-08-12
 
+- [2026-08-12] Đã push gộp `cdf7f3b..c4ece84`: feature graphic + chplay.md + privacy-policy sources. Build mới **`31618321688`** đang chạy (docs-only vẫn trigger build). Artifact đầy đủ nhất lấy từ **run `31616883001`** (code links+icon, sẽ xong trước) hoặc `31618321688` (cùng code).
 - [2026-08-12] Xong: **Feature Graphic `assets/images/feature-graphic.png` (1024×500)** — nền dark #0B0F14 + glow nhẹ, ring lớn giữa gradient blue→purple có gap countdown 60° + số "20" trắng 7-seg, 5 ring stage nhỏ (chain) cung dưới, wordmark LOOPTIMER + subtitle, badge FREE tròn gradient brand, icon clock. Script `scripts/generate-feature-graphic.mjs` (text vẽ bằng vector hình học, pure Node). **CHƯA push** (marketing asset, không cần trigger build).
 - [2026-08-12] Xong: **App Icon mới `assets/images/icon.png` (512×512)** — nền rounded dark `#0B0F14`, vòng tròn kín 5 segment (đỏ→cam→vàng→xanh→tím, đúng palette stage `stage-colors.ts`), glyph trắng "20" kiểu 7-segment ở giữa. Script `scripts/generate-app-icon.mjs` (pure Node, supersample 2048→512).
 - [2026-08-12] Đang chạy: **build mới nhất `31616477651`** — commit `a4a24b4` (Settings: privacy link thật `hoangsoft90.github.io/...` + rate link Play Store `play.google.com/store/apps/details?id=com.looptimer.app`, đã push). Trước đó run `31604528686` (AAB release signed) đã success 45m28s.
